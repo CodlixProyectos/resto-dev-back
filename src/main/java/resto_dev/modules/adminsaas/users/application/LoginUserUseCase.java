@@ -13,8 +13,7 @@ import resto_dev.shared.errors.ApiException;
 import resto_dev.shared.security.jwt.JwtProvider;
 
 /**
- * Use case: Login an existing user.
- * Validates credentials and generates a JWT token.
+ * Use case: Login — validates credentials and generates JWT.
  */
 @Service
 @RequiredArgsConstructor
@@ -27,31 +26,27 @@ public class LoginUserUseCase implements LoginUserPort {
 
     @Override
     public AuthResult execute(LoginCommand command) {
-        // Find user by email
         User user = userRepository.findByEmail(command.email())
                 .orElseThrow(() -> ApiException.unauthorized("Invalid email or password"));
 
-        // Verify password
         if (!passwordEncoder.matches(command.password(), user.getPasswordHash())) {
             throw ApiException.unauthorized("Invalid email or password");
         }
 
-        // Check if user is active
         if (!user.isActive()) {
             throw ApiException.forbidden("Account is disabled");
         }
 
-        // Generate JWT
         String token = jwtProvider.generateToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRole().name());
+                user.isSuperAdmin());
 
         return new AuthResult(
                 token,
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole().name());
+                user.isSuperAdmin());
     }
 }

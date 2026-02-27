@@ -6,9 +6,9 @@ import java.util.UUID;
  * Result returned after successful authentication.
  */
 public record AuthResult(
-        String token,
-        UUID userId,
-        String email,
-        String fullName,
-        String role) {
+                String token,
+                UUID userId,
+                String email,
+                String fullName,
+                boolean superAdmin) {
 }

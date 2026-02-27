@@ -11,8 +11,7 @@ import resto_dev.modules.adminsaas.users.ports.out.UserRepositoryPort;
 import resto_dev.shared.errors.ApiException;
 
 /**
- * Use case: Register a new user.
- * Validates uniqueness, hashes password, persists user.
+ * Use case: Register a new user (global identity only).
  */
 @Service
 @RequiredArgsConstructor
@@ -24,21 +23,18 @@ public class RegisterUserUseCase implements RegisterUserPort {
 
     @Override
     public User execute(RegisterCommand command) {
-        // Validate email uniqueness
         if (userRepository.existsByEmail(command.email())) {
             throw ApiException.conflict("Email already registered: " + command.email());
         }
 
-        // Build domain entity
         User user = User.builder()
                 .email(command.email())
                 .passwordHash(passwordEncoder.encode(command.password()))
                 .fullName(command.fullName())
-                .role(command.role())
+                .superAdmin(false)
                 .active(true)
                 .build();
 
-        // Persist through output port
         return userRepository.save(user);
     }
 }

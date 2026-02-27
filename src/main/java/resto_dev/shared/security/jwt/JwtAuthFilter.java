@@ -16,12 +16,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * JWT authentication filter — runs once per request.
- * Extracts Bearer token, validates it, and sets the SecurityContext.
+ * Sets SecurityContext with userId as principal.
+ * Adds ROLE_SUPER_ADMIN authority if applicable.
  */
 @Slf4j
 @Component
@@ -43,9 +45,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (token != null && jwtProvider.validateToken(token)) {
             UUID userId = jwtProvider.extractUserId(token);
-            String role = jwtProvider.extractRole(token);
+            boolean superAdmin = jwtProvider.extractSuperAdmin(token);
 
-            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            if (superAdmin) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+            }
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
             var authentication = new UsernamePasswordAuthenticationToken(
                     userId, null, authorities);

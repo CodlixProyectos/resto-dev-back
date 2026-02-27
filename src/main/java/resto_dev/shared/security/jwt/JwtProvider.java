@@ -13,6 +13,8 @@ import java.util.UUID;
 
 /**
  * JWT utility — generates and validates JSON Web Tokens.
+ * Token claims: sub=userId, email, superAdmin.
+ * Role/permissions are resolved per-restaurant at runtime.
  */
 @Slf4j
 @Component
@@ -24,23 +26,20 @@ public class JwtProvider {
     /**
      * Generate a JWT token for the given user.
      */
-    public String generateToken(UUID userId, String email, String role) {
+    public String generateToken(UUID userId, String email, boolean superAdmin) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + jwtProperties.getExpirationMs());
 
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("email", email)
-                .claim("role", role)
+                .claim("superAdmin", superAdmin)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    /**
-     * Validate a JWT token.
-     */
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -54,25 +53,16 @@ public class JwtProvider {
         }
     }
 
-    /**
-     * Extract user ID from token.
-     */
     public UUID extractUserId(String token) {
         return UUID.fromString(getClaims(token).getSubject());
     }
 
-    /**
-     * Extract email from token.
-     */
     public String extractEmail(String token) {
         return getClaims(token).get("email", String.class);
     }
 
-    /**
-     * Extract role from token.
-     */
-    public String extractRole(String token) {
-        return getClaims(token).get("role", String.class);
+    public boolean extractSuperAdmin(String token) {
+        return Boolean.TRUE.equals(getClaims(token).get("superAdmin", Boolean.class));
     }
 
     // ── Private ──

@@ -5,7 +5,6 @@ import resto_dev.modules.adminsaas.users.domain.User;
 
 /**
  * Maps between domain User and JPA UserJpaEntity.
- * Keeps JPA annotations out of the domain layer.
  */
 @Component
 public class UserJpaMapper {
@@ -16,7 +15,7 @@ public class UserJpaMapper {
                 .email(entity.getEmail())
                 .passwordHash(entity.getPasswordHash())
                 .fullName(entity.getFullName())
-                .role(entity.getRole())
+                .superAdmin(entity.isSuperAdmin())
                 .active(entity.isActive())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
@@ -28,11 +27,10 @@ public class UserJpaMapper {
                 .email(user.getEmail())
                 .passwordHash(user.getPasswordHash())
                 .fullName(user.getFullName())
-                .role(user.getRole())
+                .superAdmin(user.isSuperAdmin())
                 .active(user.isActive())
                 .build();
 
-        // Preserve ID for updates
         if (user.getId() != null) {
             entity.setId(user.getId());
         }

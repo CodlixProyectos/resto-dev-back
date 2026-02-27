@@ -7,7 +7,7 @@ import java.util.UUID;
 
 /**
  * User domain entity — pure POJO, no JPA annotations.
- * Represents the core user concept in the domain layer.
+ * Represents a global identity. Roles are handled via restaurant_members.
  */
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class User {
     private String email;
     private String passwordHash;
     private String fullName;
-    private Role role;
+    private boolean superAdmin;
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

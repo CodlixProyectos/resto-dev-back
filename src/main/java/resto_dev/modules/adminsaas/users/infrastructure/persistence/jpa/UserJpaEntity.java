@@ -2,12 +2,11 @@ package resto_dev.modules.adminsaas.users.infrastructure.persistence.jpa;
 
 import jakarta.persistence.*;
 import lombok.*;
-import resto_dev.modules.adminsaas.users.domain.Role;
 import resto_dev.shared.common.BaseEntity;
 
 /**
  * JPA entity for the users table (public schema).
- * Separate from the domain User to keep JPA concerns out of the domain.
+ * Only stores global identity — roles are in restaurant_members.
  */
 @Entity
 @Table(name = "users", schema = "public")
@@ -27,9 +26,9 @@ public class UserJpaEntity extends BaseEntity {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
+    @Builder.Default
+    @Column(name = "super_admin", nullable = false)
+    private boolean superAdmin = false;
 
     @Builder.Default
     @Column(name = "active", nullable = false)
