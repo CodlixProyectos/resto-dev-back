@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: resto-dev
+
+  # ── Datasource ──
+  datasource:
+    url: jdbc:postgresql://localhost:5432/resto_dev
+    username: postgres
+    password: 123456789
+    driver-class-name: org.postgresql.Driver
+
+  # ── JPA / Hibernate ──
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# ── JWT ──
+app:
+  jwt:
+    secret: ZXN0YS1lcy11bmEtY2xhdmUtc2VjcmV0YS1kZS1kZXNhcnJvbGxvLXF1ZS1kZWJlLXNlci1jYW1iaWFkYS1lbi1wcm9kdWNjaW9u
+    expiration-ms: 86400000  # 24 horas
+
+# ── Server ──
+server:
+  port: 8080

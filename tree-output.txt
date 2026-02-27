@@ -1,0 +1,337 @@
+resto-dev/
+├── docs/
+├── future-services/
+│   ├── billing-service/
+│   ├── realtime-gateway/
+│   └── workers/
+├── scripts/
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── resto_dev/
+    │   │       ├── modules/
+    │   │       │   ├── adminsaas/
+    │   │       │   │   ├── clients/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   ├── restaurantmembers/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   ├── restaurants/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   └── users/
+    │   │       │   │       ├── adapters/
+    │   │       │   │       │   ├── mappers/
+    │   │       │   │       │   └── web/
+    │   │       │   │       ├── application/
+    │   │       │   │       ├── domain/
+    │   │       │   │       ├── infrastructure/
+    │   │       │   │       │   └── persistence/
+    │   │       │   │       │       └── jpa/
+    │   │       │   │       └── ports/
+    │   │       │   │           ├── in/
+    │   │       │   │           └── out/
+    │   │       │   ├── audit/
+    │   │       │   │   └── auditlogs/
+    │   │       │   │       ├── adapters/
+    │   │       │   │       │   ├── mappers/
+    │   │       │   │       │   └── web/
+    │   │       │   │       ├── application/
+    │   │       │   │       ├── domain/
+    │   │       │   │       ├── infrastructure/
+    │   │       │   │       │   └── persistence/
+    │   │       │   │       │       └── jpa/
+    │   │       │   │       └── ports/
+    │   │       │   │           ├── in/
+    │   │       │   │           └── out/
+    │   │       │   ├── health/
+    │   │       │   │   └── healthcheck/
+    │   │       │   │       ├── adapters/
+    │   │       │   │       │   ├── mappers/
+    │   │       │   │       │   └── web/
+    │   │       │   │       ├── application/
+    │   │       │   │       ├── domain/
+    │   │       │   │       ├── infrastructure/
+    │   │       │   │       │   └── persistence/
+    │   │       │   │       │       └── jpa/
+    │   │       │   │       └── ports/
+    │   │       │   │           ├── in/
+    │   │       │   │           └── out/
+    │   │       │   ├── menu/
+    │   │       │   │   ├── categories/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   ├── modifiers/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   ├── products/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   └── variants/
+    │   │       │   │       ├── adapters/
+    │   │       │   │       │   ├── mappers/
+    │   │       │   │       │   └── web/
+    │   │       │   │       ├── application/
+    │   │       │   │       ├── domain/
+    │   │       │   │       ├── infrastructure/
+    │   │       │   │       │   └── persistence/
+    │   │       │   │       │       └── jpa/
+    │   │       │   │       └── ports/
+    │   │       │   │           ├── in/
+    │   │       │   │           └── out/
+    │   │       │   ├── orders/
+    │   │       │   │   ├── orderitemmodifiers/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   ├── orderitems/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   ├── orders/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   └── statushistory/
+    │   │       │   │       ├── adapters/
+    │   │       │   │       │   ├── mappers/
+    │   │       │   │       │   └── web/
+    │   │       │   │       ├── application/
+    │   │       │   │       ├── domain/
+    │   │       │   │       ├── infrastructure/
+    │   │       │   │       │   └── persistence/
+    │   │       │   │       │       └── jpa/
+    │   │       │   │       └── ports/
+    │   │       │   │           ├── in/
+    │   │       │   │           └── out/
+    │   │       │   ├── payments/
+    │   │       │   │   ├── cashsessions/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   └── payments/
+    │   │       │   │       ├── adapters/
+    │   │       │   │       │   ├── mappers/
+    │   │       │   │       │   └── web/
+    │   │       │   │       ├── application/
+    │   │       │   │       ├── domain/
+    │   │       │   │       ├── infrastructure/
+    │   │       │   │       │   └── persistence/
+    │   │       │   │       │       └── jpa/
+    │   │       │   │       └── ports/
+    │   │       │   │           ├── in/
+    │   │       │   │           └── out/
+    │   │       │   ├── reports/
+    │   │       │   │   ├── exports/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   ├── products/
+    │   │       │   │   │   ├── adapters/
+    │   │       │   │   │   │   ├── mappers/
+    │   │       │   │   │   │   └── web/
+    │   │       │   │   │   ├── application/
+    │   │       │   │   │   ├── domain/
+    │   │       │   │   │   ├── infrastructure/
+    │   │       │   │   │   │   └── persistence/
+    │   │       │   │   │   │       └── jpa/
+    │   │       │   │   │   └── ports/
+    │   │       │   │   │       ├── in/
+    │   │       │   │   │       └── out/
+    │   │       │   │   └── sales/
+    │   │       │   │       ├── adapters/
+    │   │       │   │       │   ├── mappers/
+    │   │       │   │       │   └── web/
+    │   │       │   │       ├── application/
+    │   │       │   │       ├── domain/
+    │   │       │   │       ├── infrastructure/
+    │   │       │   │       │   └── persistence/
+    │   │       │   │       │       └── jpa/
+    │   │       │   │       └── ports/
+    │   │       │   │           ├── in/
+    │   │       │   │           └── out/
+    │   │       │   └── restaurant/
+    │   │       │       ├── areas/
+    │   │       │       │   ├── adapters/
+    │   │       │       │   │   ├── mappers/
+    │   │       │       │   │   └── web/
+    │   │       │       │   ├── application/
+    │   │       │       │   ├── domain/
+    │   │       │       │   ├── infrastructure/
+    │   │       │       │   │   └── persistence/
+    │   │       │       │   │       └── jpa/
+    │   │       │       │   └── ports/
+    │   │       │       │       ├── in/
+    │   │       │       │       └── out/
+    │   │       │       ├── settings/
+    │   │       │       │   ├── adapters/
+    │   │       │       │   │   ├── mappers/
+    │   │       │       │   │   └── web/
+    │   │       │       │   ├── application/
+    │   │       │       │   ├── domain/
+    │   │       │       │   ├── infrastructure/
+    │   │       │       │   │   └── persistence/
+    │   │       │       │   │       └── jpa/
+    │   │       │       │   └── ports/
+    │   │       │       │       ├── in/
+    │   │       │       │       └── out/
+    │   │       │       └── tables/
+    │   │       │           ├── adapters/
+    │   │       │           │   ├── mappers/
+    │   │       │           │   └── web/
+    │   │       │           ├── application/
+    │   │       │           ├── domain/
+    │   │       │           ├── infrastructure/
+    │   │       │           │   └── persistence/
+    │   │       │           │       └── jpa/
+    │   │       │           └── ports/
+    │   │       │               ├── in/
+    │   │       │               └── out/
+    │   │       └── shared/
+    │   │           ├── audit/
+    │   │           ├── common/
+    │   │           ├── errors/
+    │   │           ├── responses/
+    │   │           ├── security/
+    │   │           ├── tenancy/
+    │   │           └── utils/
+    │   └── resources/
+    │       ├── static/
+    │       └── templates/
+    └── test/
+        └── java/
+            └── resto_dev/
+                ├── modules/
+                │   ├── adminsaas/
+                │   │   ├── clients/
+                │   │   ├── restaurantmembers/
+                │   │   ├── restaurants/
+                │   │   └── users/
+                │   ├── audit/
+                │   │   └── auditlogs/
+                │   ├── health/
+                │   │   └── healthcheck/
+                │   ├── menu/
+                │   │   ├── categories/
+                │   │   ├── modifiers/
+                │   │   ├── products/
+                │   │   └── variants/
+                │   ├── orders/
+                │   │   ├── orderitemmodifiers/
+                │   │   ├── orderitems/
+                │   │   ├── orders/
+                │   │   └── statushistory/
+                │   ├── payments/
+                │   │   ├── cashsessions/
+                │   │   └── payments/
+                │   ├── reports/
+                │   │   ├── exports/
+                │   │   ├── products/
+                │   │   └── sales/
+                │   └── restaurant/
+                │       ├── areas/
+                │       ├── settings/
+                │       └── tables/
+                └── shared/
+                    ├── audit/
+                    ├── common/
+                    ├── errors/
+                    ├── responses/
+                    ├── security/
+                    ├── tenancy/
+                    └── utils/
