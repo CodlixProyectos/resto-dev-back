@@ -53,7 +53,7 @@ public class OrganizationController {
                 var command = webMapper.toCommand(request);
                 Organization org = createOrganizationPort.execute(command, ownerId);
                 return ResponseEntity.status(HttpStatus.CREATED)
-                                .body(ApiResponse.created(toResponse(org), "Organization created"));
+                                .body(ApiResponse.created(webMapper.toResponse(org), "Organization created"));
         }
 
         @Operation(summary = "Mis organizaciones", description = "Lista las organizaciones del usuario autenticado")
@@ -61,7 +61,7 @@ public class OrganizationController {
         public ResponseEntity<ApiResponse<List<OrganizationResponse>>> myOrganizations(
                         @Parameter(hidden = true) @AuthenticationPrincipal UUID ownerId) {
                 List<OrganizationResponse> list = organizationRepository.findByOwnerId(ownerId).stream()
-                                .map(this::toResponse).toList();
+                                .map(webMapper::toResponse).toList();
                 return ResponseEntity.ok(ApiResponse.ok(list));
         }
 
@@ -83,7 +83,7 @@ public class OrganizationController {
                 PaginatedResponse<Organization> result = getOrganizationsUseCase.getOrganizations(query);
 
                 PaginatedResponse<OrganizationResponse> response = PaginatedResponse.<OrganizationResponse>builder()
-                                .data(result.getData().stream().map(this::toResponse).toList())
+                                .data(result.getData().stream().map(webMapper::toResponse).toList())
                                 .page(result.getPage())
                                 .size(result.getSize())
                                 .totalElements(result.getTotalElements())
@@ -93,10 +93,5 @@ public class OrganizationController {
                                 .build();
 
                 return ResponseEntity.ok(ApiResponse.ok(response));
-        }
-
-        private OrganizationResponse toResponse(Organization o) {
-                return new OrganizationResponse(o.getId(), o.getName(), o.getSlug(),
-                                o.getSchemaName(), o.getType(), o.getOwnerId(), o.isActive());
         }
 }
