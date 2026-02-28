@@ -19,6 +19,8 @@ spring:
         format_sql: true
         default_schema: public
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        # ── Multi-Tenancy Configuration ──
+        multiTenancy: SCHEMA
 
 # ── JWT ──
 app:
