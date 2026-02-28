@@ -12,8 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import resto_dev.modules.adminsaas.members.infrastructure.persistence.jpa.OrganizationMemberJpaRepository;
-import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.jpa.OrganizationJpaRepository;
+import resto_dev.modules.adminsaas.members.infrastructure.persistence.repository.OrganizationMemberJpaRepository;
+import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.repository.OrganizationJpaRepository;
 
 import java.io.IOException;
 import java.util.UUID;

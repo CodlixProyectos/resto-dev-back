@@ -2,7 +2,7 @@ package resto_dev.modules.adminsaas.subscriptions.infrastructure.persistence.jpa
 
 import jakarta.persistence.*;
 import lombok.*;
-import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.jpa.OrganizationJpaEntity;
+import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.entity.OrganizationJpaEntity;
 import resto_dev.shared.common.BaseEntity;
 
 import java.time.LocalDate;

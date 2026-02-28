@@ -67,7 +67,7 @@ erDiagram
         string notes "e.g., No onions"
     }
 
-    %% Payments
+    %% Payments & Invoicing
     PAYMENT {
         uuid id PK
         uuid order_id FK
@@ -76,15 +76,80 @@ erDiagram
         timestamp paid_at
     }
 
+    INVOICE {
+        uuid id PK
+        uuid payment_id FK
+        string invoice_number "e.g., F001-492"
+        string tax_id "RUC/CUIT/NIT"
+        string customer_name
+        string status "PENDING, ISSUED, FAILED"
+        timestamp issued_at
+    }
+
+    %% Audit & Security
+    AUDIT_LOG {
+        uuid id PK
+        string entity_name "e.g., ORDER, PAYMENT"
+        uuid entity_id
+        string action "CREATE, UPDATE, DELETE"
+        string changes_json "JSON with old_value -> new_value"
+        uuid user_id FK "Who did this?"
+        timestamp created_at
+    }
+
+    %% Inventory (New Module)
+    INGREDIENT {
+        uuid id PK
+        string name "e.g., Tomate, Carne Molida"
+        string unit_of_measure "kg, gr, litros, unidades"
+        decimal current_stock
+        decimal minimum_stock "Alert threshold"
+    }
+
+    RECIPE_ITEM {
+        uuid id PK
+        uuid product_id FK "The dish"
+        uuid ingredient_id FK "The raw material"
+        decimal quantity_required "Amount needed per dish"
+    }
+
+    INVENTORY_TRANSACTION {
+        uuid id PK
+        uuid ingredient_id FK
+        decimal quantity_changed "+50 or -2.5"
+        string type "IN, OUT, ADJUSTMENT, SPOILAGE"
+        string reference "e.g., Order #123, Purchase #45"
+        timestamp created_at
+    }
+
     %% Relationships
     CATEGORY ||--o{ PRODUCT : contains
     AREA ||--o{ TABLE : contains
     TABLE ||--o{ ORDER : has
     WAITER ||--o{ ORDER : manages
+    WAITER ||--o{ AUDIT_LOG : "performs actions"
     ORDER ||--|{ ORDER_ITEM : contains
     PRODUCT ||--o{ ORDER_ITEM : ordered_as
     ORDER ||--o{ PAYMENT : paid_via
+    PAYMENT ||--o| INVOICE : generates
+
+    %% Inventory Relationships
+    PRODUCT ||--o{ RECIPE_ITEM : "requires"
+    INGREDIENT ||--o{ RECIPE_ITEM : "used_in"
+    INGREDIENT ||--o{ INVENTORY_TRANSACTION : "tracks"
 ```
+
+### ¿Qué agregamos a la Base de Datos para soportar el futuro crecimiento?
+
+1. **Tabla `AUDIT_LOG` (Seguridad y Trazabilidad)**: 
+   Tal como lo discutimos, esta tabla es sagrada. Si un mesero o administrador borra una orden (`action: "DELETE"`), o cambia un pago de S/100 a S/10 (`action: "UPDATE"`), todo queda registrado en formato JSON (`changes_json`) vinculando la acción al `user_id` exacto. Al ser una tabla que solo crece y nunca se actualiza, es ultra rápida para insertar datos.
+
+2. **Tabla `INVOICE` (Integración con Facturación Electrónica / Colas)**:
+   Cuando el cliente pide factura, no deberíamos bloquear el hilo de Java esperando que la SUNAT responda. Se crea un registro en `INVOICE` con estado `PENDING`. El worker de RabbitMQ manda el XML y si la SUNAT devuelve "OK", el worker actualiza esta tabla a estado `ISSUED` y guarda el `invoice_number` oficial.
+
+3. **Modificaciones Menores que podrías considerar (Dependiendo de la madurez):**
+   *   **Control de Inventario**: Una tabla extra `INVENTORY_TRANSACTION` si quieres descontar ingredientes exactos (ej: restar 150g de carne por cada hamburguesa vendida).
+   *   **Caja / Cierre de Turno**: Una tabla `CASH_REGISTER_SESSION` para que el mesero "abra" su caja con S/50 en la mañana y rinda cuentas en la noche. 
 
 ## How this solves your requirements:
 

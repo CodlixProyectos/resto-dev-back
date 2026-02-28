@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import resto_dev.modules.adminsaas.members.ports.out.MemberRepositoryPort;
+import resto_dev.modules.adminsaas.members.application.port.output.MemberRepositoryPort;
 
 import java.io.Serializable;
 import java.util.List;
