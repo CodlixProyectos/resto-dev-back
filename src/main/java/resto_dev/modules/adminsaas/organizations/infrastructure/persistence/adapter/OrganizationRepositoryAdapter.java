@@ -1,8 +1,7 @@
 package resto_dev.modules.adminsaas.organizations.infrastructure.persistence.adapter;
-import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.entity.OrganizationJpaEntity;
+
 import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.repository.OrganizationJpaRepository;
 import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.mapper.OrganizationJpaMapper;
-
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.UUID;
 import resto_dev.modules.menu.categories.application.query.ListCategoriesQuery;
 import resto_dev.shared.common.pagination.PageModel;
-import java.util.UUID;
 
 /**
  * Out port for Category persistence.

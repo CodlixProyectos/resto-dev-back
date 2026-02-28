@@ -4,7 +4,6 @@ import resto_dev.modules.adminsaas.users.infrastructure.persistence.entity.UserJ
 import resto_dev.modules.adminsaas.users.domain.model.User;
 
 import org.springframework.stereotype.Component;
-import resto_dev.modules.adminsaas.users.domain.model.User;
 
 /**
  * Maps between domain User and JPA UserJpaEntity.
