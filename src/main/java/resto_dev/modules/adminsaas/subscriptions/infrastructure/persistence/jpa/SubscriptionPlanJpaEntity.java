@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  * Subscription plan entity — defines SaaS tiers.
  */
 @Entity
-@Table(name = "subscription_plans", schema = "public")
+@Table(name = "subscription_plans", schema = "admin")
 @Getter
 @Setter
 @NoArgsConstructor
