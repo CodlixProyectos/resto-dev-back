@@ -20,6 +20,7 @@ public class OrganizationMember {
     private UUID organizationId;
     private UUID userId;
     private UUID roleId;
+    private String pin;
     private boolean active;
     private LocalDateTime joinedAt;
 }

@@ -45,8 +45,8 @@ public class TenantConnectionProvider implements MultiTenantConnectionProvider<S
     @Override
     public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
         try {
-            connection.createStatement().execute("SET SCHEMA 'public'");
-            log.trace("Connection released and schema reset to 'public'");
+            connection.createStatement().execute("SET SCHEMA 'admin'");
+            log.trace("Connection released and schema reset to 'admin'");
         } catch (SQLException e) {
             throw new SQLException("Could not reset schema to public", e);
         }

@@ -11,7 +11,7 @@ import java.time.LocalDate;
  * Organization subscription — links an organization to a plan.
  */
 @Entity
-@Table(name = "organization_subscriptions", schema = "public")
+@Table(name = "organization_subscriptions", schema = "admin")
 @Getter
 @Setter
 @NoArgsConstructor

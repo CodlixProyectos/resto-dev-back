@@ -9,7 +9,7 @@ import resto_dev.shared.common.BaseEntity;
  * Examples: CREATE_ORDER, VIEW_REPORTS, MANAGE_MENU.
  */
 @Entity
-@Table(name = "permissions", schema = "public")
+@Table(name = "permissions", schema = "admin")
 @Getter
 @Setter
 @NoArgsConstructor

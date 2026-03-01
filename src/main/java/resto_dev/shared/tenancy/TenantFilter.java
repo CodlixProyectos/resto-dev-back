@@ -43,6 +43,7 @@ public class TenantFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(orgIdHeader)) {
             try {
                 UUID organizationId = UUID.fromString(orgIdHeader);
+                TenantContext.setCurrentOrganizationId(organizationId);
                 boolean accessGranted = setupTenantContext(organizationId);
 
                 if (!accessGranted) {

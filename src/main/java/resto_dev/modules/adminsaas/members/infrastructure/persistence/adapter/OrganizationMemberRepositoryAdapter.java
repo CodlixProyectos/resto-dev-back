@@ -22,10 +22,27 @@ public class OrganizationMemberRepositoryAdapter implements MemberRepositoryPort
     private final OrganizationMemberJpaMapper mapper;
 
     @Override
+    public OrganizationMember save(OrganizationMember member) {
+        OrganizationMemberJpaEntity entity = mapper.toEntity(member);
+        OrganizationMemberJpaEntity savedEntity = jpaRepository.save(entity);
+        return mapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<OrganizationMember> findById(UUID id) {
+        return jpaRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
     public Optional<OrganizationMember> findByOrganizationAndUser(UUID organizationId, UUID userId) {
         return jpaRepository.findByOrganizationIdAndUserId(organizationId, userId).stream()
                 .findFirst()
                 .map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<OrganizationMember> findByOrganizationAndPin(UUID organizationId, String pin) {
+        return jpaRepository.findByOrganizationIdAndPin(organizationId, pin).map(mapper::toDomain);
     }
 
     @Override

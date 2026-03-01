@@ -5,11 +5,11 @@ import lombok.*;
 import resto_dev.shared.common.BaseEntity;
 
 /**
- * JPA entity for the users table (public schema).
+ * JPA entity for the users table (admin schema).
  * Only stores global identity — roles are in restaurant_members.
  */
 @Entity
-@Table(name = "users", schema = "public")
+@Table(name = "users", schema = "admin")
 @Getter
 @Setter
 @NoArgsConstructor

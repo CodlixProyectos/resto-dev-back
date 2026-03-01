@@ -13,7 +13,7 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
     @Override
     public String resolveCurrentTenantIdentifier() {
         String tenantName = TenantContext.getCurrentTenant();
-        return (tenantName != null) ? tenantName : "public";
+        return (tenantName != null) ? tenantName : "admin";
     }
 
     @Override

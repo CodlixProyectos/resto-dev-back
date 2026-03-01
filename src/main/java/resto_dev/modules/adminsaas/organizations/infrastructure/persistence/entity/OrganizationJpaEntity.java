@@ -7,11 +7,11 @@ import resto_dev.shared.common.BaseEntity;
 import java.util.UUID;
 
 /**
- * JPA entity for the organizations table (public schema).
+ * JPA entity for the organizations table (admin schema).
  * Generic tenant — can be a restaurant, hotel, gym, etc.
  */
 @Entity
-@Table(name = "organizations", schema = "public")
+@Table(name = "organizations", schema = "admin")
 @Getter
 @Setter
 @NoArgsConstructor

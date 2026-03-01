@@ -12,7 +12,7 @@ import java.util.Set;
  * Examples: OWNER, MANAGER, WAITER, KITCHEN.
  */
 @Entity
-@Table(name = "roles", schema = "public")
+@Table(name = "roles", schema = "admin")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,6 +32,6 @@ public class RoleEntity extends BaseEntity {
 
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "role_permissions", schema = "public", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    @JoinTable(name = "role_permissions", schema = "admin", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private Set<PermissionEntity> permissions = new HashSet<>();
 }

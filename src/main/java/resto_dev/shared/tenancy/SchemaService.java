@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 public class SchemaService {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FlywayConfig flywayConfig;
+    private final javax.sql.DataSource dataSource;
 
     /**
      * Create a new schema for a tenant.
@@ -25,9 +27,9 @@ public class SchemaService {
     public void createSchema(String schemaName) {
         validateSchemaName(schemaName);
 
-        String sql = "CREATE SCHEMA IF NOT EXISTS " + schemaName;
-        jdbcTemplate.execute(sql);
-        log.info("✅ Created tenant schema: {}", schemaName);
+        log.info("Starting schema creation and Flyway migrations for: {}", schemaName);
+        flywayConfig.migrateTenantSchema(dataSource, schemaName);
+        log.info("✅ Created and migrated tenant schema: {}", schemaName);
     }
 
     /**

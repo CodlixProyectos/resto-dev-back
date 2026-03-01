@@ -7,8 +7,8 @@ import lombok.Builder;
  */
 @Builder
 public record GetOrganizationsQuery(
-        int page,
-        int size,
-        String search,
-        Boolean isActive) {
+                int page,
+                int size,
+                String search,
+                Boolean isActive) {
 }

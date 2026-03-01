@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * Links User + Organization + Role (generic, not restaurant-specific).
  */
 @Entity
-@Table(name = "organization_members", schema = "public", uniqueConstraints = @UniqueConstraint(columnNames = {
+@Table(name = "organization_members", schema = "admin", uniqueConstraints = @UniqueConstraint(columnNames = {
         "organization_id", "user_id", "role_id" }, name = "uk_member_org_user_role"))
 @Getter
 @Setter
@@ -38,6 +38,9 @@ public class OrganizationMemberJpaEntity extends BaseEntity {
     @Builder.Default
     @Column(name = "active", nullable = false)
     private boolean active = true;
+
+    @Column(name = "pin", length = 255)
+    private String pin;
 
     @Builder.Default
     @Column(name = "joined_at", nullable = false)
