@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.layout.zones.application.command.CreateZoneCommand;
 import resto_dev.modules.layout.zones.application.command.UpdateZoneCommand;
@@ -40,7 +39,8 @@ public class ZoneController {
     private final ZoneWebMapper webMapper;
 
     @PostMapping("/create")
-    @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
+    // TODO: Descomentar en producción después de configurar permisos
+    // @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
     @Operation(summary = "Crear una nueva zona", description = "Registra un nuevo salón o ambiente físico.")
     public ResponseEntity<ApiResponse<ZoneResponse>> createZone(
             @RequestHeader("X-Organization-Id") UUID orgId,
@@ -52,7 +52,8 @@ public class ZoneController {
     }
 
     @GetMapping("/list")
-    @PreAuthorize("hasPermission(#orgId, 'Organization', 'VIEW_LAYOUT')")
+    // TODO: Descomentar en producción después de configurar permisos
+    // @PreAuthorize("hasPermission(#orgId, 'Organization', 'VIEW_LAYOUT')")
     @Operation(summary = "Listar zonas", description = "Devuelve las zonas paginadas con soporte de filtros.")
     public ResponseEntity<ApiResponse<PaginatedResponse<ZoneResponse>>> listZones(
             @RequestHeader("X-Organization-Id") UUID orgId,
@@ -88,7 +89,8 @@ public class ZoneController {
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
+    // TODO: Descomentar en producción después de configurar permisos
+    // @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
     @Operation(summary = "Actualizar zona", description = "Actualiza el nombre, descripción o estado activo de una zona.")
     public ResponseEntity<ApiResponse<ZoneResponse>> updateZone(
             @RequestHeader("X-Organization-Id") UUID orgId,
@@ -100,7 +102,8 @@ public class ZoneController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
+    // TODO: Descomentar en producción después de configurar permisos
+    // @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
     @Operation(summary = "Eliminar zona", description = "Elimina físicamente una zona si no tiene mesas enlazadas.")
     public ResponseEntity<ApiResponse<Void>> deleteZone(
             @RequestHeader("X-Organization-Id") UUID orgId,

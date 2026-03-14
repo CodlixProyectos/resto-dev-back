@@ -11,5 +11,6 @@ public record UpdateProductCommand(
         String description,
         BigDecimal price,
         UUID categoryId,
-        boolean active) {
+        boolean active,
+        String imageUrl) {
 }

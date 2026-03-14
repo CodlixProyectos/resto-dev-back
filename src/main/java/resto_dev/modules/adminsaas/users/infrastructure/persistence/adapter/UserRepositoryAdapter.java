@@ -8,7 +8,6 @@ import resto_dev.modules.adminsaas.users.infrastructure.persistence.entity.UserJ
 import resto_dev.modules.adminsaas.users.infrastructure.persistence.repository.UserJpaRepository;
 import resto_dev.modules.adminsaas.users.infrastructure.persistence.mapper.UserJpaMapper;
 
-
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,5 +44,10 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public boolean existsByEmail(String email) {
         return jpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        jpaRepository.deleteById(id);
     }
 }

@@ -51,7 +51,7 @@ public class ZoneRepositoryAdapter implements ZoneRepositoryPort {
 
     @Override
     public PageModel<Zone> searchZones(SearchZonesQuery query) {
-        Specification<ZoneJpaEntity> spec = Specification.where((Specification<ZoneJpaEntity>) null);
+        Specification<ZoneJpaEntity> spec = Specification.where((root, cq, cb) -> cb.conjunction());
 
         if (query.search() != null && !query.search().trim().isEmpty()) {
             spec = spec.and(GenericSpecificationBuilder.searchInFields(query.search(), "name", "description"));

@@ -17,6 +17,8 @@ public class UserJpaMapper {
                 .email(entity.getEmail())
                 .passwordHash(entity.getPasswordHash())
                 .fullName(entity.getFullName())
+                .phoneNumber(entity.getPhoneNumber())
+                .avatarUrl(entity.getAvatarUrl())
                 .superAdmin(entity.isSuperAdmin())
                 .active(entity.isActive())
                 .createdAt(entity.getCreatedAt())
@@ -29,6 +31,8 @@ public class UserJpaMapper {
                 .email(user.getEmail())
                 .passwordHash(user.getPasswordHash())
                 .fullName(user.getFullName())
+                .phoneNumber(user.getPhoneNumber())
+                .avatarUrl(user.getAvatarUrl())
                 .superAdmin(user.isSuperAdmin())
                 .active(user.isActive())
                 .build();

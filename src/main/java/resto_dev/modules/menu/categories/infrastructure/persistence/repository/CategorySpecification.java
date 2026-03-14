@@ -22,7 +22,7 @@ public class CategorySpecification {
             }
 
             if (isActive != null) {
-                predicates.add(cb.equal(root.get("isActive"), isActive));
+                predicates.add(cb.equal(root.get("active"), isActive));
             }
 
             // Returns the conjunction AND of all valid predicates

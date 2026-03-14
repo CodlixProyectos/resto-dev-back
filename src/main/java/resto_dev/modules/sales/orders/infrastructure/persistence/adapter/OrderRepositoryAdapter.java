@@ -39,7 +39,7 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
 
     @Override
     public PageModel<Order> searchOrders(SearchOrdersQuery query) {
-        Specification<OrderJpaEntity> spec = Specification.where((Specification<OrderJpaEntity>) null);
+        Specification<OrderJpaEntity> spec = Specification.where((root, cq, cb) -> cb.conjunction());
 
         if (query.tableId() != null) {
             spec = spec.and((root, cq, cb) -> cb.equal(root.get("tableId"), query.tableId()));

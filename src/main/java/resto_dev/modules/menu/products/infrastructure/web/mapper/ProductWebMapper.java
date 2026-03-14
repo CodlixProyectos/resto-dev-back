@@ -16,6 +16,7 @@ public class ProductWebMapper {
                 .description(request.description())
                 .price(request.price())
                 .categoryId(request.categoryId())
+                .imageUrl(request.imageUrl())
                 .build();
     }
 
@@ -27,6 +28,7 @@ public class ProductWebMapper {
                 .price(request.price())
                 .categoryId(request.categoryId())
                 .active(request.active())
+                .imageUrl(request.imageUrl())
                 .build();
     }
 
@@ -40,6 +42,7 @@ public class ProductWebMapper {
                 product.getDescription(),
                 product.getPrice(),
                 product.getCategoryId(),
-                product.isActive());
+                product.isActive(),
+                product.getImageUrl());
     }
 }

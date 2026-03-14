@@ -26,6 +26,12 @@ public class UserJpaEntity extends BaseEntity {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
     @Builder.Default
     @Column(name = "super_admin", nullable = false)
     private boolean superAdmin = false;

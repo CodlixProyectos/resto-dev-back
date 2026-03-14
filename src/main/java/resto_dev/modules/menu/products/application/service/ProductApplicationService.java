@@ -33,6 +33,7 @@ public class ProductApplicationService
                 .name(command.name())
                 .description(command.description())
                 .price(command.price())
+                .imageUrl(command.imageUrl())
                 .categoryId(command.categoryId())
                 .active(true)
                 .build();
@@ -57,6 +58,7 @@ public class ProductApplicationService
         product.setName(command.name());
         product.setDescription(command.description());
         product.setPrice(command.price());
+        product.setImageUrl(command.imageUrl());
         product.setCategoryId(command.categoryId());
         product.setActive(command.active());
 

@@ -25,6 +25,9 @@ public class ProductJpaEntity extends BaseEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(columnDefinition = "TEXT")
+    private String imageUrl;
+
     @Column(nullable = false)
     private boolean active;
 

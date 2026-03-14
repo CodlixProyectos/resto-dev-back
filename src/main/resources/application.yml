@@ -17,7 +17,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        default_schema: admin
         dialect: org.hibernate.dialect.PostgreSQLDialect
         # ── Multi-Tenancy Configuration ──
         multiTenancy: SCHEMA

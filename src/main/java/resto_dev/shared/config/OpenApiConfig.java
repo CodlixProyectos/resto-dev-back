@@ -73,8 +73,8 @@ public class OpenApiConfig {
                 return GroupedOpenApi.builder()
                                 .group("3. Tenant Operations API")
                                 .packagesToScan(
-                                                "resto_dev.modules.menu.category",
-                                                "resto_dev.modules.menu.product",
+                                                "resto_dev.modules.menu.categories",
+                                                "resto_dev.modules.menu.products",
                                                 "resto_dev.modules.layout",
                                                 "resto_dev.modules.sales",
                                                 "resto_dev.modules.analytics",

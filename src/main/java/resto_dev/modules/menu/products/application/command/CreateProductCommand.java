@@ -10,5 +10,6 @@ public record CreateProductCommand(
         String name,
         String description,
         BigDecimal price,
-        UUID categoryId) {
+        UUID categoryId,
+        String imageUrl) {
 }
