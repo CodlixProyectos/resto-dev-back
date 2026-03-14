@@ -19,6 +19,11 @@ import resto_dev.modules.adminsaas.users.application.service.GetUserProfileAppli
 import resto_dev.modules.adminsaas.users.domain.model.User;
 import resto_dev.modules.adminsaas.users.application.port.input.LoginUserUseCase;
 import resto_dev.modules.adminsaas.users.application.port.input.RegisterUserUseCase;
+import resto_dev.modules.adminsaas.users.application.port.input.DeleteUserAccountUseCase;
+import resto_dev.modules.adminsaas.users.application.port.input.UpdateUserPasswordUseCase;
+import resto_dev.modules.adminsaas.users.application.port.input.UpdateUserProfileUseCase;
+import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.UpdatePasswordRequest;
+import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.UpdateProfileRequest;
 import resto_dev.modules.adminsaas.users.application.command.AuthResult;
 import resto_dev.modules.adminsaas.users.application.command.LoginCommand;
 import resto_dev.shared.responses.ApiResponse;
@@ -37,6 +42,9 @@ public class AuthController {
         private final RegisterUserUseCase registerUserPort;
         private final LoginUserUseCase loginUserPort;
         private final GetUserProfileApplicationService getUserProfileUseCase;
+        private final UpdateUserProfileUseCase updateUserProfileUseCase;
+        private final UpdateUserPasswordUseCase updateUserPasswordUseCase;
+        private final DeleteUserAccountUseCase deleteUserAccountUseCase;
         private final UserWebMapper userDtoMapper;
 
         @Operation(summary = "Registrar usuario", description = "Crea una nueva cuenta de usuario con email, contraseña y rol.")
@@ -84,5 +92,50 @@ public class AuthController {
                 UserResponse response = userDtoMapper.toResponse(user);
 
                 return ResponseEntity.ok(ApiResponse.ok(response));
+        }
+
+        @Operation(summary = "Actualizar mi perfil", description = "Actualiza el nombre, teléfono y foto de perfil del usuario logueado.")
+        @ApiResponses({
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Perfil actualizado"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado")
+        })
+        @PutMapping("/me")
+        public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UUID userId,
+                        @Valid @RequestBody UpdateProfileRequest request) {
+                User user = updateUserProfileUseCase.updateUserProfile(
+                                userId, request.getFullName(), request.getPhoneNumber(), request.getAvatarUrl());
+
+                return ResponseEntity
+                                .ok(ApiResponse.ok(userDtoMapper.toResponse(user), "Perfil actualizado correctamente"));
+        }
+
+        @Operation(summary = "Cambiar Contraseña", description = "Permite al usuario autenticado cambiar su contraseña actual.")
+        @ApiResponses({
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Contraseña cambiada"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "La contraseña actual es incorrecta o los datos no son válidos"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado")
+        })
+        @PutMapping("/password")
+        public ResponseEntity<ApiResponse<Void>> updatePassword(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UUID userId,
+                        @Valid @RequestBody UpdatePasswordRequest request) {
+                updateUserPasswordUseCase.updateUserPassword(
+                                userId, request.getCurrentPassword(), request.getNewPassword());
+
+                return ResponseEntity.ok(ApiResponse.ok(null, "Contraseña actualizada exitosamente"));
+        }
+
+        @Operation(summary = "Eliminar Cuenta", description = "Elimina permanentemente la cuenta del usuario actual y todos sus datos personales.")
+        @ApiResponses({
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cuenta eliminada"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado")
+        })
+        @DeleteMapping("/me")
+        public ResponseEntity<ApiResponse<Void>> deleteAccount(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UUID userId) {
+                deleteUserAccountUseCase.deleteUserAccount(userId);
+
+                return ResponseEntity.ok(ApiResponse.ok(null, "Cuenta eliminada permanentemente"));
         }
 }

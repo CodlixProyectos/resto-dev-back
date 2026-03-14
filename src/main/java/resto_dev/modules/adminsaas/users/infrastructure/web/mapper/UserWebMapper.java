@@ -24,6 +24,8 @@ public class UserWebMapper {
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
+                user.getPhoneNumber(),
+                user.getAvatarUrl(),
                 user.isSuperAdmin(),
                 user.isActive());
     }

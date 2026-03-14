@@ -14,8 +14,10 @@ import resto_dev.modules.layout.tables.domain.model.Table;
 import resto_dev.modules.layout.tables.domain.model.TableStatus;
 import resto_dev.modules.layout.zones.application.port.output.ZoneRepositoryPort;
 import resto_dev.shared.common.pagination.PageModel;
+import resto_dev.shared.errors.BusinessValidationException;
+import resto_dev.shared.errors.DuplicateResourceException;
+import resto_dev.shared.errors.ResourceNotFoundException;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -32,11 +34,11 @@ public class TableApplicationService implements
     @Override
     public Table execute(CreateTableCommand command) {
         if (zoneRepository.findById(command.zoneId()).isEmpty()) {
-            throw new IllegalArgumentException("La Zona proporcionada no existe.");
+            throw BusinessValidationException.invalidReference("Zona", command.zoneId());
         }
 
         if (tableRepository.existsByTableNumberAndZoneId(command.tableNumber(), command.zoneId())) {
-            throw new IllegalArgumentException("Ya existe una mesa con ese número en esta zona.");
+            throw new DuplicateResourceException("Ya existe una mesa con ese número en esta zona.");
         }
 
         TableStatus status = command.status() != null ? command.status() : TableStatus.FREE;
@@ -59,17 +61,12 @@ public class TableApplicationService implements
 
     @Override
     public Table execute(UUID id, UpdateTableCommand command) {
-        Optional<Table> existingTable = tableRepository.findById(id);
-
-        if (existingTable.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la Mesa con ID: " + id);
-        }
-
-        Table table = existingTable.get();
+        Table table = tableRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa", id));
 
         if (command.zoneId() != null && !table.getZoneId().equals(command.zoneId())) {
             if (zoneRepository.findById(command.zoneId()).isEmpty()) {
-                throw new IllegalArgumentException("La nueva Zona proporcionada no existe.");
+                throw BusinessValidationException.invalidReference("Zona", command.zoneId());
             }
         }
 
@@ -77,7 +74,7 @@ public class TableApplicationService implements
 
         if (!table.getTableNumber().equalsIgnoreCase(command.tableNumber()) || !table.getZoneId().equals(finalZoneId)) {
             if (tableRepository.existsByTableNumberAndZoneId(command.tableNumber(), finalZoneId)) {
-                throw new IllegalArgumentException("Ya existe otra mesa con ese número en esta zona.");
+                throw new DuplicateResourceException("Ya existe otra mesa con ese número en esta zona.");
             }
         }
 
@@ -93,7 +90,7 @@ public class TableApplicationService implements
     @Override
     public void execute(UUID id) {
         if (tableRepository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la Mesa con ID: " + id);
+            throw new ResourceNotFoundException("Mesa", id);
         }
         tableRepository.deleteById(id);
     }

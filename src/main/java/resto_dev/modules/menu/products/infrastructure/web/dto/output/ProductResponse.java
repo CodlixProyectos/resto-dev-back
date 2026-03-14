@@ -9,5 +9,6 @@ public record ProductResponse(
                 String description,
                 BigDecimal price,
                 UUID categoryId,
-                boolean active) {
+                boolean active,
+                String imageUrl) {
 }

@@ -19,6 +19,7 @@ public class ProductJpaMapper {
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .price(entity.getPrice())
+                .imageUrl(entity.getImageUrl())
                 .active(entity.isActive())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
@@ -39,6 +40,7 @@ public class ProductJpaMapper {
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .imageUrl(product.getImageUrl())
                 .active(product.isActive())
                 .category(product.getCategoryId() != null ? categoryRef : null)
                 .build();

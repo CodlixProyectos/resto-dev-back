@@ -16,5 +16,7 @@ public record UpdateProductRequest(
 
         @NotNull(message = "Category ID is required") UUID categoryId,
 
-        boolean active) {
+        boolean active,
+        
+        String imageUrl) {
 }

@@ -14,5 +14,7 @@ public record CreateProductRequest(
 
         @NotNull(message = "Price is required") @Positive(message = "Price must be positive") BigDecimal price,
 
-        @NotNull(message = "Category ID is required") UUID categoryId) {
+        @NotNull(message = "Category ID is required") UUID categoryId,
+        
+        String imageUrl) {
 }

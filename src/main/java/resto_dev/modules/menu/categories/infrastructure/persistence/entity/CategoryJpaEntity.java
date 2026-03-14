@@ -1,5 +1,6 @@
 package resto_dev.modules.menu.categories.infrastructure.persistence.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -22,5 +23,6 @@ public class CategoryJpaEntity extends BaseEntity {
 
     private String description;
 
-    private boolean isActive;
+    @Column(name = "active", nullable = false)
+    private boolean active;
 }

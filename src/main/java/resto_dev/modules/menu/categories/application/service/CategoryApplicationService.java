@@ -29,7 +29,6 @@ public class CategoryApplicationService implements
     @Override
     public Category execute(CreateCategoryCommand command) {
         Category newCategory = Category.builder()
-                .id(UUID.randomUUID())
                 .name(command.getName())
                 .description(command.getDescription())
                 .isActive(true)

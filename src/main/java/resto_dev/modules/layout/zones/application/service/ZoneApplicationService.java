@@ -12,8 +12,9 @@ import resto_dev.modules.layout.zones.application.port.output.ZoneRepositoryPort
 import resto_dev.modules.layout.zones.application.query.SearchZonesQuery;
 import resto_dev.modules.layout.zones.domain.model.Zone;
 import resto_dev.shared.common.pagination.PageModel;
+import resto_dev.shared.errors.DuplicateResourceException;
+import resto_dev.shared.errors.ResourceNotFoundException;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -29,7 +30,7 @@ public class ZoneApplicationService implements
     @Override
     public Zone execute(CreateZoneCommand command) {
         if (zoneRepository.existsByName(command.name())) {
-            throw new IllegalArgumentException("Ya existe una Zona con ese nombre.");
+            throw new DuplicateResourceException("zona", "nombre", command.name());
         }
 
         Zone newZone = Zone.builder()
@@ -48,16 +49,11 @@ public class ZoneApplicationService implements
 
     @Override
     public Zone execute(UUID id, UpdateZoneCommand command) {
-        Optional<Zone> existingZone = zoneRepository.findById(id);
-
-        if (existingZone.isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la Zona con ID: " + id);
-        }
-
-        Zone zone = existingZone.get();
+        Zone zone = zoneRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Zona", id));
 
         if (!zone.getName().equalsIgnoreCase(command.name()) && zoneRepository.existsByName(command.name())) {
-            throw new IllegalArgumentException("Ya existe otra Zona con ese nombre.");
+            throw new DuplicateResourceException("zona", "nombre", command.name());
         }
 
         zone.setName(command.name());
@@ -70,7 +66,7 @@ public class ZoneApplicationService implements
     @Override
     public void execute(UUID id) {
         if (zoneRepository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("No se encontró la Zona con ID: " + id);
+            throw new ResourceNotFoundException("Zona", id);
         }
         zoneRepository.deleteById(id);
     }
