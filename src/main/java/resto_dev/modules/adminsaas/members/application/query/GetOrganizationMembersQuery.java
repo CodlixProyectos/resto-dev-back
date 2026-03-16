@@ -12,5 +12,6 @@ public record GetOrganizationMembersQuery(
         int page,
         int size,
         String search,
-        Boolean isActive) {
+        Boolean isActive,
+        String role) {
 }

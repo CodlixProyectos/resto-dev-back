@@ -56,12 +56,17 @@ public class CreateOrganizationApplicationService implements CreateOrganizationU
 
         String schemaName = "client_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 
+        // Fetch owner email to pre-populate organization contact info
+        UserJpaEntity owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> ApiException.notFound("Owner not found: " + ownerId));
+
         Organization organization = Organization.builder()
                 .name(command.name())
                 .slug(command.slug())
                 .schemaName(schemaName)
                 .type(command.type() != null ? command.type() : "restaurant")
                 .ownerId(ownerId)
+                .email(owner.getEmail()) // Pre-populate with registration email
                 .active(true)
                 .build();
 

@@ -7,6 +7,7 @@ import resto_dev.modules.adminsaas.users.infrastructure.persistence.entity.UserJ
 import resto_dev.shared.common.BaseEntity;
 import resto_dev.shared.security.permissions.RoleEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -41,6 +42,13 @@ public class OrganizationMemberJpaEntity extends BaseEntity {
 
     @Column(name = "pin", length = 255)
     private String pin;
+
+    @Builder.Default
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
+    @Column(name = "salary", precision = 10, scale = 2)
+    private BigDecimal salary;
 
     @Builder.Default
     @Column(name = "joined_at", nullable = false)

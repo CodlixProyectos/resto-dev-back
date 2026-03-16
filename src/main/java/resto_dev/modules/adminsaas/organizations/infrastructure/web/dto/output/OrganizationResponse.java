@@ -12,5 +12,11 @@ public record OrganizationResponse(
                 String schemaName,
                 String type,
                 UUID ownerId,
-                boolean active) {
+                boolean active,
+                String legalName,
+                String businessId,
+                String email,
+                String phone,
+                String address,
+                String logoUrl) {
 }

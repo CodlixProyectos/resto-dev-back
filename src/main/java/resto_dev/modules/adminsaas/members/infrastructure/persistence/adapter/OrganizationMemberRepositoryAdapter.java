@@ -10,9 +10,11 @@ import resto_dev.modules.adminsaas.members.domain.model.OrganizationMember;
 import resto_dev.modules.adminsaas.members.application.port.output.MemberRepositoryPort;
 import resto_dev.shared.security.permissions.PermissionEntity;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import resto_dev.modules.adminsaas.members.domain.model.StaffStats;
 
 @Component
 @RequiredArgsConstructor
@@ -53,5 +55,20 @@ public class OrganizationMemberRepositoryAdapter implements MemberRepositoryPort
                 .map(PermissionEntity::getCode)
                 .distinct()
                 .toList();
+    }
+
+    @Override
+    public StaffStats getStats(UUID organizationId) {
+        long total = jpaRepository.countByOrganizationId(organizationId);
+        long active = jpaRepository.countByOrganizationIdAndStatus(organizationId, "ACTIVE");
+        long onLeave = jpaRepository.countByOrganizationIdAndStatus(organizationId, "ON_LEAVE");
+        BigDecimal totalPayroll = jpaRepository.sumSalaryByOrganizationId(organizationId);
+
+        return new StaffStats(
+            total,
+            active,
+            onLeave,
+            totalPayroll != null ? totalPayroll : BigDecimal.ZERO
+        );
     }
 }

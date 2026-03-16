@@ -14,6 +14,7 @@ import resto_dev.modules.adminsaas.members.application.port.output.OrganizationM
 import resto_dev.modules.adminsaas.members.application.query.GetOrganizationMembersQuery;
 import resto_dev.modules.adminsaas.members.domain.model.OrganizationMember;
 import resto_dev.modules.adminsaas.members.infrastructure.persistence.entity.OrganizationMemberJpaEntity;
+import resto_dev.modules.adminsaas.users.infrastructure.persistence.entity.UserJpaEntity;
 import resto_dev.modules.adminsaas.members.infrastructure.persistence.mapper.OrganizationMemberJpaMapper;
 import resto_dev.modules.adminsaas.members.infrastructure.persistence.repository.OrganizationMemberJpaRepository;
 import resto_dev.shared.security.permissions.RoleEntity;
@@ -54,21 +55,27 @@ public class OrganizationMemberQueryAdapter implements OrganizationMemberQueryPo
             // Always filter by the current organization
             predicates.add(cb.equal(root.get("organization").get("id"), query.organizationId()));
 
-            // Search filter by joining to user profile (Not easily doable without User
-            // entity joined,
-            // but we can search by Role Name as a fallback for the example,
-            // since members table relies on User ID link and RoleEntity link).
             if (query.search() != null && !query.search().trim().isEmpty()) {
                 String likePattern = "%" + query.search().toLowerCase().trim() + "%";
                 Join<OrganizationMemberJpaEntity, RoleEntity> roleJoin = root.join("role");
+                Join<OrganizationMemberJpaEntity, UserJpaEntity> userJoin = root.join("user");
 
-                predicates.add(
-                        cb.like(cb.lower(roleJoin.get("name")), likePattern));
+                predicates.add(cb.or(
+                        cb.like(cb.lower(userJoin.get("fullName")), likePattern),
+                        cb.like(cb.lower(userJoin.get("email")), likePattern),
+                        cb.like(cb.lower(userJoin.get("dni")), likePattern),
+                        cb.like(cb.lower(roleJoin.get("name")), likePattern)));
             }
 
             // isActive filter
             if (query.isActive() != null) {
-                predicates.add(cb.equal(root.get("isActive"), query.isActive()));
+                predicates.add(cb.equal(root.get("active"), query.isActive()));
+            }
+
+            // role filter (Case insensitive)
+            if (query.role() != null && !query.role().trim().isEmpty()) {
+                Join<OrganizationMemberJpaEntity, RoleEntity> roleJoin = root.join("role");
+                predicates.add(cb.equal(cb.lower(roleJoin.get("name")), query.role().toLowerCase().trim()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

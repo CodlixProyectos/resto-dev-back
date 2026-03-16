@@ -40,31 +40,27 @@ public class TableController {
         private final TableWebMapper webMapper;
 
         @PostMapping("/create")
-        // TODO: Descomentar en producción después de configurar permisos
         // @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
-        @Operation(
-                summary = "Crear nueva mesa", 
-                description = """
+        @Operation(summary = "Crear nueva mesa", description = """
                         Crea una nueva mesa asociándola a una Zona existente.
-                        
+
                         **Campos requeridos:**
                         - zoneId: UUID de la zona
                         - tableNumber: Identificador único de la mesa
                         - capacity: Número de comensales (1-20)
-                        
+
                         **Campos opcionales:**
                         - status: Estado inicial (por defecto: FREE)
-                        
+
                         **Campos automáticos:**
                         - id: Generado automáticamente como UUID
                         - active: Siempre true al crear
-                        """
-        )
+                        """)
         @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Mesa creada exitosamente"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos inválidos o validación fallida"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Zona no encontrada"),
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Ya existe una mesa con ese número en la zona")
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Mesa creada exitosamente"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Datos inválidos o validación fallida"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Zona no encontrada"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Ya existe una mesa con ese número en la zona")
         })
         public ResponseEntity<ApiResponse<TableResponse>> createTable(
                         @RequestHeader("X-Organization-Id") UUID orgId,
@@ -77,7 +73,7 @@ public class TableController {
         }
 
         @GetMapping("/list")
-        // TODO: Descomentar en producción después de configurar permisos
+
         // @PreAuthorize("hasPermission(#orgId, 'Organization', 'VIEW_LAYOUT')")
         @Operation(summary = "Listar mesas", description = "Devuelve las mesas con soporte de filtros (buscar número, zona, estado, etc).")
         public ResponseEntity<ApiResponse<PaginatedResponse<TableResponse>>> listTables(

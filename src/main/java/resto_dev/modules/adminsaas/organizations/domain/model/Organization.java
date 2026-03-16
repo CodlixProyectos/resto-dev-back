@@ -23,6 +23,12 @@ public class Organization {
     private String schemaName;
     private String type;
     private UUID ownerId;
+    private String legalName;
+    private String businessId;
+    private String email;
+    private String phone;
+    private String address;
+    private String logoUrl;
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

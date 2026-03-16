@@ -29,6 +29,9 @@ public class UserJpaEntity extends BaseEntity {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
+    @Column(name = "dni", length = 20)
+    private String dni;
+
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 

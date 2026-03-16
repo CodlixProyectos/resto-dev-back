@@ -30,6 +30,8 @@ public class OrganizationMemberJpaMapper {
                 .roleId(entity.getRole() != null ? entity.getRole().getId() : null)
                 .pin(entity.getPin())
                 .active(entity.isActive())
+                .status(entity.getStatus())
+                .salary(entity.getSalary())
                 .joinedAt(entity.getJoinedAt())
                 .build();
     }
@@ -46,6 +48,8 @@ public class OrganizationMemberJpaMapper {
                         : null)
                 .pin(domain.getPin())
                 .active(domain.isActive())
+                .status(domain.getStatus())
+                .salary(domain.getSalary())
                 .build();
 
         if (domain.getId() != null) {

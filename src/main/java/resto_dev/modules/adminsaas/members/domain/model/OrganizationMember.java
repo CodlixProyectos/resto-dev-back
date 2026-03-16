@@ -2,6 +2,7 @@ package resto_dev.modules.adminsaas.members.domain.model;
 
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -22,5 +23,7 @@ public class OrganizationMember {
     private UUID roleId;
     private String pin;
     private boolean active;
+    private String status;
+    private BigDecimal salary;
     private LocalDateTime joinedAt;
 }

@@ -21,6 +21,7 @@ public class User {
     private String passwordHash;
     private String fullName;
     private String phoneNumber;
+    private String dni;
     private String avatarUrl;
     private boolean superAdmin;
     private boolean active;

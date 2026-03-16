@@ -35,6 +35,24 @@ public class OrganizationJpaEntity extends BaseEntity {
     @Column(name = "owner_id", nullable = false)
     private UUID ownerId;
 
+    @Column(name = "legal_name")
+    private String legalName;
+
+    @Column(name = "business_id", length = 50)
+    private String businessId;
+
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "phone", length = 50)
+    private String phone;
+
+    @Column(name = "address", columnDefinition = "TEXT")
+    private String address;
+
+    @Column(name = "logo_url", columnDefinition = "TEXT")
+    private String logoUrl;
+
     @Builder.Default
     @Column(name = "active", nullable = false)
     private boolean active = true;
