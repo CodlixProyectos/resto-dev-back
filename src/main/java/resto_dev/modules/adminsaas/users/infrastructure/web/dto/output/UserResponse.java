@@ -1,0 +1,19 @@
+package resto_dev.modules.adminsaas.users.infrastructure.web.dto.output;
+
+import java.util.UUID;
+
+/**
+ * Response DTO for user data (never exposes password).
+ */
+public record UserResponse(
+        UUID id,
+        String email,
+        String fullName,
+        String phoneNumber,
+        String avatarUrl,
+        boolean superAdmin,
+        boolean active,
+        boolean notificationsEnabled,
+        boolean soundEnabled,
+        boolean darkModeEnabled) {
+}
