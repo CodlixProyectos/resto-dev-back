@@ -15,6 +15,8 @@ public class Zone {
     private String name;
     private String description;
     private boolean active;
+    private Double entrancePosX;
+    private Double entrancePosY;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

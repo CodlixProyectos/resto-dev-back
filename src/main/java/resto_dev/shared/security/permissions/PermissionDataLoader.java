@@ -46,7 +46,7 @@ public class PermissionDataLoader implements CommandLineRunner {
                 
                 // Kitchen permissions
                 createPermission("VIEW_KITCHEN", "View kitchen orders", "Kitchen"),
-                createPermission("MANAGE_KITCHEN", "Update order status in kitchen", "Kitchen"),
+                createPermission("UPDATE_KITCHEN", "Update order status in kitchen", "Kitchen"),
                 
                 // Staff permissions
                 createPermission("VIEW_STAFF", "View staff members", "Staff"),

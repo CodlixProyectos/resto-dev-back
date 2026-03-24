@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.adminsaas.users.infrastructure.web.mapper.UserWebMapper;
+import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.UpdatePreferencesRequest;
 import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.LoginRequest;
 import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.RegisterRequest;
 import resto_dev.modules.adminsaas.users.infrastructure.web.dto.output.UserResponse;
@@ -124,6 +125,21 @@ public class AuthController {
                                 userId, request.getCurrentPassword(), request.getNewPassword());
 
                 return ResponseEntity.ok(ApiResponse.ok(null, "Contraseña actualizada exitosamente"));
+        }
+
+        @Operation(summary = "Actualizar Preferencias", description = "Actualiza las preferencias de notificaciones, sonido y modo oscuro del usuario.")
+        @ApiResponses({
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Preferencias actualizadas"),
+                        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "No autenticado")
+        })
+        @PutMapping("/preferences")
+        public ResponseEntity<ApiResponse<UserResponse>> updatePreferences(
+                        @Parameter(hidden = true) @AuthenticationPrincipal UUID userId,
+                        @Valid @RequestBody UpdatePreferencesRequest request) {
+                User user = updateUserProfileUseCase.updateUserPreferences(
+                                userId, request.getNotificationsEnabled(), request.getSoundEnabled(), request.getDarkModeEnabled());
+
+                return ResponseEntity.ok(ApiResponse.ok(userDtoMapper.toResponse(user), "Preferencias actualizadas"));
         }
 
         @Operation(summary = "Eliminar Cuenta", description = "Elimina permanentemente la cuenta del usuario actual y todos sus datos personales.")

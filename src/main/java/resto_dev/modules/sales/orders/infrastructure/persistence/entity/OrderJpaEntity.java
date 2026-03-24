@@ -3,6 +3,7 @@ package resto_dev.modules.sales.orders.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import resto_dev.modules.sales.orders.domain.model.OrderStatus;
+import resto_dev.modules.sales.orders.domain.model.OrderType;
 import resto_dev.shared.common.BaseEntity;
 
 import java.math.BigDecimal;
@@ -19,8 +20,18 @@ import java.util.UUID;
 @Builder
 public class OrderJpaEntity extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private UUID tableId;
+
+    @Column(name = "table_number", length = 50)
+    private String tableNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", nullable = false, length = 30)
+    private OrderType type;
+
+    @Column(length = 150)
+    private String customerName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -36,6 +47,9 @@ public class OrderJpaEntity extends BaseEntity {
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
+
+    @Column(name = "waiter_id")
+    private UUID waiterId;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

@@ -41,7 +41,10 @@ public class PensionerConsumptionApplicationService
     }
 
     @Override
-    public Page<PensionerConsumption> execute(UUID pensionerId, int month, int year, Pageable pageable) {
+    public Page<PensionerConsumption> execute(UUID pensionerId, int month, int year, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        if (startDate != null && endDate != null) {
+            return repository.findByPensionerAndDateRange(pensionerId, startDate, endDate, pageable);
+        }
         return repository.findByPensionerAndMonth(pensionerId, month, year, pageable);
     }
 

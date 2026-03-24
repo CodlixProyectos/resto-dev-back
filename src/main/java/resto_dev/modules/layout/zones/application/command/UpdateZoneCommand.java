@@ -6,5 +6,7 @@ import lombok.Builder;
 public record UpdateZoneCommand(
         String name,
         String description,
-        boolean active) {
+        boolean active,
+        Double entrancePosX,
+        Double entrancePosY) {
 }

@@ -42,4 +42,16 @@ public class UserJpaEntity extends BaseEntity {
     @Builder.Default
     @Column(name = "active", nullable = false)
     private boolean active = true;
+
+    @Builder.Default
+    @Column(name = "notifications_enabled", nullable = false)
+    private boolean notificationsEnabled = true;
+
+    @Builder.Default
+    @Column(name = "sound_enabled", nullable = false)
+    private boolean soundEnabled = true;
+
+    @Builder.Default
+    @Column(name = "dark_mode_enabled", nullable = false)
+    private boolean darkModeEnabled = false;
 }

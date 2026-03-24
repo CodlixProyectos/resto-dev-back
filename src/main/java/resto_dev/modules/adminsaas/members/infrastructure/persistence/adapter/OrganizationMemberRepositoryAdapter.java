@@ -71,4 +71,30 @@ public class OrganizationMemberRepositoryAdapter implements MemberRepositoryPort
             totalPayroll != null ? totalPayroll : BigDecimal.ZERO
         );
     }
+
+    @Override
+    public List<OrganizationMember> findByUserId(UUID userId) {
+        return jpaRepository.findByUserId(userId).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<OrganizationMember> findAllByOrganization(UUID organizationId) {
+        return jpaRepository.findByOrganizationId(organizationId).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<OrganizationMember> findByEmailAndPin(String email, String pin) {
+        return jpaRepository.findByUserEmailAndPin(email, pin)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<OrganizationMember> findByDniAndPin(String dni, String pin) {
+        return jpaRepository.findByUserDniAndPin(dni, pin)
+                .map(mapper::toDomain);
+    }
 }

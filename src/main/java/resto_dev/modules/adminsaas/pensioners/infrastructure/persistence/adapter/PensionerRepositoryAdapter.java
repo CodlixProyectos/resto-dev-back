@@ -33,9 +33,23 @@ public class PensionerRepositoryAdapter implements PensionerRepositoryPort {
     }
 
     @Override
-    public Page<Pensioner> findAllByOrganizationId(UUID organizationId, Pageable pageable) {
+    public Page<Pensioner> findAllByOrganizationId(UUID organizationId, Pageable pageable, String search) {
+        if (search != null && !search.trim().isEmpty()) {
+            return jpaRepository.findAllByOrganizationIdAndSearch(organizationId, search, pageable)
+                    .map(mapper::toDomain);
+        }
         return jpaRepository.findAllByOrganizationId(organizationId, pageable)
                 .map(mapper::toDomain);
+    }
+
+    @Override
+    public boolean existsByOrganizationIdAndDni(UUID organizationId, String dni) {
+        return jpaRepository.existsByOrganizationIdAndDni(organizationId, dni);
+    }
+
+    @Override
+    public boolean existsByOrganizationIdAndEmail(UUID organizationId, String email) {
+        return jpaRepository.existsByOrganizationIdAndEmail(organizationId, email);
     }
 
     @Override

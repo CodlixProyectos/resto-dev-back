@@ -7,5 +7,5 @@ import resto_dev.modules.adminsaas.pensioners.domain.model.Pensioner;
 import java.util.UUID;
 
 public interface GetPensionersUseCase {
-    Page<Pensioner> execute(UUID organizationId, Pageable pageable);
+    Page<Pensioner> execute(UUID organizationId, Pageable pageable, String search);
 }

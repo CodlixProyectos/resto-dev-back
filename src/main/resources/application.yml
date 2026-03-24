@@ -8,9 +8,15 @@ spring:
     username: postgres
     password: 123456789
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   # ── JPA / Hibernate ──
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: none
     show-sql: true
@@ -20,6 +26,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         # ── Multi-Tenancy Configuration ──
         multiTenancy: SCHEMA
+        connection.handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION
 
   # ── Auto Flyway para Esquema Global Admin ──
   flyway:

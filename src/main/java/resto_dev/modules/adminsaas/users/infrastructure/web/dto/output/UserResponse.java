@@ -12,5 +12,8 @@ public record UserResponse(
         String phoneNumber,
         String avatarUrl,
         boolean superAdmin,
-        boolean active) {
+        boolean active,
+        boolean notificationsEnabled,
+        boolean soundEnabled,
+        boolean darkModeEnabled) {
 }

@@ -10,14 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.adminsaas.members.application.port.input.*;
-import resto_dev.modules.adminsaas.members.application.port.input.GetOrganizationMemberUseCase;
-import resto_dev.modules.adminsaas.members.application.port.input.GetStaffStatsUseCase;
 import resto_dev.modules.adminsaas.members.application.query.GetOrganizationMembersQuery;
 import resto_dev.modules.adminsaas.members.domain.model.OrganizationMember;
 import resto_dev.modules.adminsaas.members.infrastructure.web.dto.input.*;
 import resto_dev.modules.adminsaas.members.infrastructure.web.dto.output.OrganizationMemberResponse;
 import resto_dev.modules.adminsaas.members.infrastructure.web.dto.output.StaffStatsResponse;
-import resto_dev.modules.adminsaas.users.application.command.AuthResult;
 import resto_dev.modules.adminsaas.users.application.port.output.UserRepositoryPort;
 import resto_dev.modules.adminsaas.users.domain.model.User;
 import resto_dev.shared.responses.ApiResponse;
@@ -42,7 +39,6 @@ public class MemberController {
         private final AddOrganizationMemberUseCase addOrganizationMemberUseCase;
         private final UpdateOrganizationMemberUseCase updateOrganizationMemberUseCase;
         private final DeactivateOrganizationMemberUseCase deactivateOrganizationMemberUseCase;
-        private final PinLoginOrganizationMemberUseCase pinLoginOrganizationMemberUseCase;
         private final UserRepositoryPort userRepositoryPort;
         private final RoleRepository roleRepository;
 
@@ -144,7 +140,7 @@ public class MemberController {
                         @Valid @RequestBody UpdateMemberRequest request) {
 
                 OrganizationMember member = updateOrganizationMemberUseCase.execute(
-                                organizationId, memberId, request.getRoleId(), request.getPin(), request.getSalary());
+                                organizationId, memberId, request.getRoleId(), request.getCurrentPin(), request.getPin(), request.getSalary(), request.getStatus(), request.getRoleName());
 
                 return ResponseEntity.ok(ApiResponse.ok(toResponse(member), "Empleado actualizado exitosamente"));
         }
@@ -158,17 +154,6 @@ public class MemberController {
                 deactivateOrganizationMemberUseCase.execute(organizationId, memberId);
 
                 return ResponseEntity.ok(ApiResponse.ok(null, "Empleado desactivado exitosamente"));
-        }
-
-        @Operation(summary = "POS PIN Login", description = "Login rápio usando PIN para tablets de Punto de Venta o Cocina.")
-        @PostMapping("/auth/pin")
-        public ResponseEntity<ApiResponse<AuthResult>> pinLogin(
-                        @PathVariable UUID organizationId,
-                        @Valid @RequestBody PinLoginRequest request) {
-
-                AuthResult result = pinLoginOrganizationMemberUseCase.execute(organizationId, request.getPin());
-
-                return ResponseEntity.ok(ApiResponse.ok(result, "POS Login Successful"));
         }
 
         private OrganizationMemberResponse toResponse(OrganizationMember member) {

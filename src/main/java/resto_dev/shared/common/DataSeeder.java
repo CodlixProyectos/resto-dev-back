@@ -41,10 +41,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedPermissions() {
-        if (permissionRepository.count() > 0)
-            return;
-
-        List<PermissionEntity> perms = List.of(
+        List<PermissionEntity> permsToSeed = List.of(
                 perm("MANAGE_RESTAURANT", "Configurar restaurante", "restaurant"),
                 perm("MANAGE_MEMBERS", "Gestionar miembros", "restaurant"),
                 perm("VIEW_MENU", "Ver menú", "menu"),
@@ -56,43 +53,62 @@ public class DataSeeder implements CommandLineRunner {
                 perm("VIEW_REPORTS", "Ver reportes", "reports"),
                 perm("MANAGE_CASH", "Gestionar caja", "payments"),
                 perm("VIEW_KITCHEN", "Ver cocina", "kitchen"),
+                perm("UPDATE_KITCHEN", "Actualizar pedidos en cocina", "kitchen"),
                 perm("MANAGE_TABLES", "Gestionar mesas", "restaurant"));
 
-        permissionRepository.saveAll(perms);
-        log.info("✅ Seeded {} permissions", perms.size());
+        for (PermissionEntity p : permsToSeed) {
+            if (permissionRepository.findByCode(p.getCode()).isEmpty()) {
+                permissionRepository.save(p);
+                log.info("✨ Added missing permission: {}", p.getCode());
+            }
+        }
     }
 
     private void seedRoles() {
-        if (roleRepository.count() > 0)
-            return;
+        List<PermissionEntity> allItems = permissionRepository.findAll();
 
-        List<PermissionEntity> allPerms = permissionRepository.findAll();
+        // 1. OWNER — Always ensure all permissions
+        upsertRole("OWNER", "Dueño del restaurante", true, allItems);
 
-        // OWNER — all permissions
-        createRole("OWNER", "Dueño del restaurante", true, allPerms);
-
-        // MANAGER — everything except MANAGE_RESTAURANT, MANAGE_MEMBERS
-        createRole("MANAGER", "Administrador de operaciones", true,
-                allPerms.stream()
+        // 2. MANAGER — everything except governance
+        upsertRole("MANAGER", "Administrador de operaciones", true,
+                allItems.stream()
                         .filter(p -> !p.getCode().equals("MANAGE_RESTAURANT") && !p.getCode().equals("MANAGE_MEMBERS"))
                         .toList());
 
-        // WAITER — orders, menu view, payments
-        createRole("WAITER", "Mesero", true,
-                allPerms.stream()
-                        .filter(p -> Set
-                                .of("VIEW_MENU", "CREATE_ORDER", "VIEW_ORDERS", "PROCESS_PAYMENT", "MANAGE_TABLES")
+        // 3. WAITER
+        upsertRole("WAITER", "Mesero", true,
+                allItems.stream()
+                        .filter(p -> Set.of("VIEW_MENU", "CREATE_ORDER", "VIEW_ORDERS", "PROCESS_PAYMENT", "MANAGE_TABLES",
+                                        "VIEW_KITCHEN", "UPDATE_KITCHEN")
                                 .contains(p.getCode()))
                         .toList());
 
-        // KITCHEN — kitchen view, order view
-        createRole("KITCHEN", "Cocina", true,
-                allPerms.stream()
-                        .filter(p -> Set.of("VIEW_KITCHEN", "VIEW_ORDERS", "VIEW_MENU")
+        // 4. KITCHEN
+        upsertRole("KITCHEN", "Cocina", true,
+                allItems.stream()
+                        .filter(p -> Set.of("VIEW_KITCHEN", "UPDATE_KITCHEN", "VIEW_ORDERS", "VIEW_MENU")
                                 .contains(p.getCode()))
                         .toList());
 
-        log.info("✅ Seeded 4 roles with permissions");
+        log.info("✅ Roles synchronized with latest permissions");
+    }
+
+    private void upsertRole(String name, String description, boolean isSystem, List<PermissionEntity> perms) {
+        RoleEntity role = roleRepository.findByName(name).orElse(
+                RoleEntity.builder()
+                        .name(name)
+                        .description(description)
+                        .system(isSystem)
+                        .build());
+
+        // Update permissions if different
+        Set<PermissionEntity> newPerms = perms.stream().collect(Collectors.toSet());
+        if (!newPerms.equals(role.getPermissions())) {
+            role.setPermissions(newPerms);
+            roleRepository.save(role);
+            log.info("🔄 Updated permissions for role: {}", name);
+        }
     }
 
     private void seedPlans() {
@@ -122,15 +138,5 @@ public class DataSeeder implements CommandLineRunner {
 
     private PermissionEntity perm(String code, String desc, String module) {
         return PermissionEntity.builder().code(code).description(desc).module(module).build();
-    }
-
-    private void createRole(String name, String description, boolean isSystem, List<PermissionEntity> perms) {
-        RoleEntity role = RoleEntity.builder()
-                .name(name)
-                .description(description)
-                .system(isSystem)
-                .permissions(perms.stream().collect(Collectors.toSet()))
-                .build();
-        roleRepository.save(role);
     }
 }

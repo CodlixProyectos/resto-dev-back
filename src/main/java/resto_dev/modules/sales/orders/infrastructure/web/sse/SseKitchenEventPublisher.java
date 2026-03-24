@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import resto_dev.modules.sales.orders.application.port.output.KitchenEventPublisherPort;
 import resto_dev.modules.sales.orders.domain.model.Order;
-import resto_dev.modules.sales.orders.infrastructure.web.dto.output.OrderResponse;
+import resto_dev.modules.sales.orders.infrastructure.web.dto.output.KitchenOrderResponse;
 import resto_dev.modules.sales.orders.infrastructure.web.mapper.OrderWebMapper;
 
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Slf4j
 @Component
@@ -72,7 +73,7 @@ public class SseKitchenEventPublisher implements KitchenEventPublisherPort {
 
         // Mapeamos a Response para que el KDS tenga el mismo formato que el REST API
         // normal
-        OrderResponse payload = webMapper.toResponse(order);
+        KitchenOrderResponse payload = webMapper.toKitchenResponse(order);
 
         List<SseEmitter> deadEmitters = new CopyOnWriteArrayList<>();
 
@@ -90,5 +91,34 @@ public class SseKitchenEventPublisher implements KitchenEventPublisherPort {
         if (!deadEmitters.isEmpty()) {
             orgEmitters.removeAll(deadEmitters);
         }
+    }
+
+    /**
+     * Heartbeat every 20 seconds to keep KDS connections alive.
+     */
+    @Scheduled(fixedRate = 20000)
+    public void scheduledHeartbeat() {
+        if (emitters.isEmpty()) return;
+
+        log.trace("Sending heartbeat to {} active KDS connections", emitters.size());
+        
+        emitters.forEach((orgId, emittersList) -> {
+            List<SseEmitter> deadEmitters = new CopyOnWriteArrayList<>();
+            
+            emittersList.forEach(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event().name("HEARTBEAT").data("💓"));
+                } catch (Exception e) {
+                    deadEmitters.add(emitter);
+                }
+            });
+
+            if (!deadEmitters.isEmpty()) {
+                emittersList.removeAll(deadEmitters);
+                if (emittersList.isEmpty()) {
+                    emitters.remove(orgId);
+                }
+            }
+        });
     }
 }

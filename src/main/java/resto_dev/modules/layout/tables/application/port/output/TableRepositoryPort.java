@@ -17,4 +17,6 @@ public interface TableRepositoryPort {
     boolean existsByTableNumberAndZoneId(String tableNumber, UUID zoneId);
 
     PageModel<Table> searchTables(SearchTablesQuery query);
+
+    long countActiveByZoneId(UUID zoneId);
 }

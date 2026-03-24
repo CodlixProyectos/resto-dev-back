@@ -25,6 +25,12 @@ public class User {
     private String avatarUrl;
     private boolean superAdmin;
     private boolean active;
+    
+    // Preferences
+    private boolean notificationsEnabled;
+    private boolean soundEnabled;
+    private boolean darkModeEnabled;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

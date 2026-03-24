@@ -61,7 +61,7 @@ public class ZoneRepositoryAdapter implements ZoneRepositoryPort {
             spec = spec.and(GenericSpecificationBuilder.isEntityActive(query.isActive()));
         }
 
-        Pageable pageable = PageRequest.of(query.page(), query.size(), Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(query.page(), query.size(), Sort.by(Sort.Direction.ASC, "createdAt"));
         Page<ZoneJpaEntity> pageResult = zoneJpaRepository.findAll(spec, pageable);
 
         return new PageModel<>(
@@ -70,5 +70,10 @@ public class ZoneRepositoryAdapter implements ZoneRepositoryPort {
                 pageResult.getSize(),
                 pageResult.getTotalElements(),
                 pageResult.getTotalPages());
+    }
+
+    @Override
+    public long countActive() {
+        return zoneJpaRepository.countByActiveTrue();
     }
 }

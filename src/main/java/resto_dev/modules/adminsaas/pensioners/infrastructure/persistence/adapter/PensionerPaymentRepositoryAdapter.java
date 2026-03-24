@@ -33,8 +33,19 @@ public class PensionerPaymentRepositoryAdapter implements PensionerPaymentReposi
     }
 
     @Override
+    public Page<PensionerPayment> findByPensionerAndDateRange(UUID pensionerId, java.time.LocalDate startDate, java.time.LocalDate endDate, Pageable pageable) {
+        return repository.findByPensionerAndDateRange(pensionerId, startDate, endDate, pageable)
+                .map(mapper::toDomain);
+    }
+
+    @Override
     public BigDecimal sumByPensionerAndMonth(UUID pensionerId, int month, int year) {
         return repository.sumAmountByPensionerAndMonth(pensionerId, month, year);
+    }
+
+    @Override
+    public BigDecimal sumByPensionerAndDateRange(UUID pensionerId, java.time.LocalDate startDate, java.time.LocalDate endDate) {
+        return repository.sumAmountByPensionerAndDateRange(pensionerId, startDate, endDate);
     }
 
     @Override

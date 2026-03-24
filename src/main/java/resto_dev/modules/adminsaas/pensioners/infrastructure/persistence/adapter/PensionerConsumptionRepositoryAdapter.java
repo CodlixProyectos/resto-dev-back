@@ -36,8 +36,19 @@ public class PensionerConsumptionRepositoryAdapter implements PensionerConsumpti
     }
 
     @Override
+    public Page<PensionerConsumption> findByPensionerAndDateRange(UUID pensionerId, java.time.LocalDate startDate, java.time.LocalDate endDate, Pageable pageable) {
+        return jpaRepository.findByPensionerAndDateRange(pensionerId, startDate, endDate, pageable)
+                .map(mapper::toDomain);
+    }
+
+    @Override
     public BigDecimal sumByPensionerAndMonth(UUID pensionerId, int month, int year) {
         return jpaRepository.sumTotalAmountByPensionerAndMonth(pensionerId, month, year);
+    }
+
+    @Override
+    public BigDecimal sumByPensionerAndDateRange(UUID pensionerId, java.time.LocalDate startDate, java.time.LocalDate endDate) {
+        return jpaRepository.sumTotalAmountByPensionerAndDateRange(pensionerId, startDate, endDate);
     }
 
     @Override

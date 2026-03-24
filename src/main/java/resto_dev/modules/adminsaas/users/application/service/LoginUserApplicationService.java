@@ -45,8 +45,14 @@ public class LoginUserApplicationService implements LoginUserUseCase {
         return new AuthResult(
                 token,
                 user.getId(),
+                null, // memberId - global login doesn't focus on a single organization member
+                null, // organizationId
                 user.getEmail(),
                 user.getFullName(),
-                user.isSuperAdmin());
+                user.isSuperAdmin(),
+                "ADMIN", // Default role for global admin login
+                user.isNotificationsEnabled(),
+                user.isSoundEnabled(),
+                user.isDarkModeEnabled());
     }
 }

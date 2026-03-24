@@ -20,4 +20,12 @@ public interface MemberRepositoryPort {
     List<String> findPermissionsByOrganizationAndUser(UUID organizationId, UUID userId);
 
     StaffStats getStats(UUID organizationId);
+
+    List<OrganizationMember> findByUserId(UUID userId);
+
+    List<OrganizationMember> findAllByOrganization(UUID organizationId);
+
+    Optional<OrganizationMember> findByEmailAndPin(String email, String pin);
+
+    Optional<OrganizationMember> findByDniAndPin(String dni, String pin);
 }

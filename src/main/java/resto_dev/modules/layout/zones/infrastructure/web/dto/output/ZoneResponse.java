@@ -6,5 +6,7 @@ public record ZoneResponse(
         UUID id,
         String name,
         String description,
-        boolean active) {
+        boolean active,
+        Double entrancePosX,
+        Double entrancePosY) {
 }

@@ -14,6 +14,8 @@ import resto_dev.modules.adminsaas.pensioners.application.port.input.GetPensione
 import resto_dev.modules.adminsaas.pensioners.application.port.input.GetPensionersUseCase;
 import resto_dev.modules.adminsaas.pensioners.domain.model.Pensioner;
 import resto_dev.modules.adminsaas.pensioners.infrastructure.web.dto.input.AddPensionerRequest;
+import resto_dev.modules.adminsaas.pensioners.application.port.input.UpdatePensionerUseCase;
+import resto_dev.modules.adminsaas.pensioners.infrastructure.web.dto.input.UpdatePensionerRequest;
 import resto_dev.modules.adminsaas.pensioners.infrastructure.web.dto.output.PensionerResponse;
 import resto_dev.shared.responses.ApiResponse;
 import resto_dev.shared.responses.PaginatedResponse;
@@ -27,6 +29,7 @@ import java.util.UUID;
 public class PensionerController {
 
     private final AddPensionerUseCase addPensionerUseCase;
+    private final UpdatePensionerUseCase updatePensionerUseCase;
     private final GetPensionersUseCase getPensionersUseCase;
     private final GetPensionerSummaryUseCase getSummaryUseCase;
 
@@ -48,33 +51,57 @@ public class PensionerController {
                 .body(ApiResponse.ok(toResponse(pensioner), "Pensionista creado correctamente"));
     }
 
+    @PutMapping("/{pensionerId}")
+    @Operation(summary = "Actualizar datos de un pensionista")
+    public ResponseEntity<ApiResponse<PensionerResponse>> updatePensioner(
+            @PathVariable UUID organizationId,
+            @PathVariable UUID pensionerId,
+            @Valid @RequestBody UpdatePensionerRequest request) {
+        
+        Pensioner pensioner = updatePensionerUseCase.execute(
+                organizationId,
+                pensionerId,
+                request.getFullName(),
+                request.getDni(),
+                request.getEmail(),
+                request.getPhoneNumber(),
+                request.isActive()
+        );
+        
+        return ResponseEntity.ok(ApiResponse.ok(toResponse(pensioner), "Pensionista actualizado correctamente"));
+    }
+
     @GetMapping
     @Operation(summary = "Listar pensionistas")
     public ResponseEntity<ApiResponse<PaginatedResponse<PensionerResponse>>> getPensioners(
             @PathVariable UUID organizationId,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) String search) {
         
         Page<Pensioner> pensionersPage = getPensionersUseCase.execute(
                 organizationId,
-                PageRequest.of(page - 1, limit)
+                PageRequest.of(page, limit),
+                search
         );
         
         return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(pensionersPage.map(this::toResponse))));
     }
 
     @GetMapping("/{pensionerId}/summary")
-    @Operation(summary = "Obtener resumen financiero del mes")
+    @Operation(summary = "Obtener resumen financiero del mes o rango")
     public ResponseEntity<ApiResponse<GetPensionerSummaryUseCase.PensionerSummaryResponse>> getSummary(
             @PathVariable UUID organizationId,
             @PathVariable UUID pensionerId,
             @RequestParam(defaultValue = "0") int month,
-            @RequestParam(defaultValue = "0") int year) {
+            @RequestParam(defaultValue = "0") int year,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate) {
         
         int rMonth = month == 0 ? java.time.LocalDate.now().getMonthValue() : month;
         int rYear = year == 0 ? java.time.LocalDate.now().getYear() : year;
         
-        var summary = getSummaryUseCase.execute(pensionerId, rMonth, rYear);
+        var summary = getSummaryUseCase.execute(pensionerId, rMonth, rYear, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.ok(summary));
     }
 

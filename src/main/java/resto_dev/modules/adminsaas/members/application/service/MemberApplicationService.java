@@ -2,6 +2,7 @@ package resto_dev.modules.adminsaas.members.application.service;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.adminsaas.members.application.port.input.AddOrganizationMemberUseCase;
@@ -10,6 +11,7 @@ import resto_dev.modules.adminsaas.members.application.port.input.PinLoginOrgani
 import resto_dev.modules.adminsaas.members.application.port.input.GetStaffStatsUseCase;
 import resto_dev.modules.adminsaas.members.application.port.input.UpdateOrganizationMemberUseCase;
 import resto_dev.modules.adminsaas.members.application.port.input.GetOrganizationMemberUseCase;
+import resto_dev.modules.adminsaas.members.application.port.input.GetStaffPerformanceUseCase;
 import resto_dev.modules.adminsaas.members.application.port.output.MemberRepositoryPort;
 import resto_dev.modules.adminsaas.members.domain.model.OrganizationMember;
 import resto_dev.modules.adminsaas.members.domain.model.StaffStats;
@@ -34,15 +36,49 @@ public class MemberApplicationService implements
         DeactivateOrganizationMemberUseCase,
         PinLoginOrganizationMemberUseCase,
         GetStaffStatsUseCase,
-        GetOrganizationMemberUseCase {
+        GetOrganizationMemberUseCase,
+        GetStaffPerformanceUseCase {
 
     private final MemberRepositoryPort memberRepository;
     private final UserRepositoryPort userRepository;
     private final JwtProvider jwtProvider;
+    private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final resto_dev.modules.sales.orders.application.port.output.OrderRepositoryPort orderRepository;
 
     @Override
     public OrganizationMember execute(UUID organizationId, String fullName, String email, String dni, String phoneNumber, String roleName, String pin, BigDecimal salary) {
+        // --- VALIDACIONES DE ENTRADA ---
+        if (fullName == null || fullName.trim().isBlank()) {
+            throw ApiException.badRequest("El nombre completo es obligatorio.");
+        }
+        if (pin == null || pin.trim().length() < 4 || pin.trim().length() > 6) {
+            throw ApiException.badRequest("El PIN debe tener entre 4 y 6 dígitos.");
+        }
+        if (roleName == null || roleName.trim().isBlank()) {
+            throw ApiException.badRequest("El rol es obligatorio.");
+        }
+
+        // Validar unicidad de DNI en la organización (si se proporciona)
+        if (dni != null && !dni.trim().isBlank()) {
+            memberRepository.findAllByOrganization(organizationId).stream()
+                .filter(m -> {
+                    // Obtener el DNI del usuario asociado
+                    return userRepository.findById(m.getUserId())
+                        .map(u -> dni.equals(u.getDni()))
+                        .orElse(false);
+                })
+                .findAny()
+                .ifPresent(existingMember -> {
+                    throw ApiException.conflict("Ya existe un empleado con el DNI '" + dni + "' en esta organización.");
+                });
+        }
+
+        if (salary != null && salary.compareTo(BigDecimal.ZERO) < 0) {
+            throw ApiException.badRequest("El salario no puede ser negativo.");
+        }
+        // -------------------------------
+
         // Buscar el rol por nombre
         RoleEntity role = roleRepository.findByName(roleName.toUpperCase())
                 .orElseThrow(() -> ApiException.badRequest("Rol '" + roleName + "' no encontrado. Roles disponibles: OWNER, MANAGER, WAITER, KITCHEN."));
@@ -54,7 +90,7 @@ public class MemberApplicationService implements
                 user = existingUser.get();
                 // Verificar que no sea ya miembro de esta organización
                 memberRepository.findByOrganizationAndUser(organizationId, user.getId())
-                        .ifPresent(m -> {
+                        .ifPresent(alreadyMember -> {
                             throw ApiException.conflict("Este usuario ya pertenece al restaurante.");
                         });
             } else {
@@ -67,17 +103,12 @@ public class MemberApplicationService implements
             user = createStaffUser(fullName, autoEmail, dni, phoneNumber);
         }
 
-        // Verificar que el PIN no esté en uso en esta organización
-        memberRepository.findByOrganizationAndPin(organizationId, pin)
-                .ifPresent(m -> {
-                    throw ApiException.conflict("Este PIN ya está en uso por otro empleado en esta organización.");
-                });
-
+        // El PIN se hashea antes de guardarse para máxima seguridad
         OrganizationMember newMember = OrganizationMember.builder()
                 .organizationId(organizationId)
                 .userId(user.getId())
                 .roleId(role.getId())
-                .pin(pin)
+                .pin(passwordEncoder.encode(pin))
                 .active(true)
                 .status("ACTIVE")
                 .salary(salary)
@@ -85,6 +116,18 @@ public class MemberApplicationService implements
                 .build();
 
         return memberRepository.save(newMember);
+    }
+
+    private boolean matchesAndMigratePin(String rawPin, OrganizationMember member) {
+        boolean matches = passwordEncoder.matches(rawPin, member.getPin());
+        
+        // Transparent migration: if it doesn't match as hash but matches as plain text
+        if (!matches && rawPin.equals(member.getPin())) {
+            member.setPin(passwordEncoder.encode(rawPin));
+            memberRepository.save(member);
+            return true;
+        }
+        return matches;
     }
 
     /**
@@ -106,7 +149,7 @@ public class MemberApplicationService implements
     }
 
     @Override
-    public OrganizationMember execute(UUID organizationId, UUID memberId, UUID newRoleId, String newPin, BigDecimal newSalary) {
+    public OrganizationMember execute(UUID organizationId, UUID memberId, UUID newRoleId, String currentPin, String newPin, BigDecimal newSalary, String newStatus, String newRoleName) {
         OrganizationMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> ApiException.notFound("Staff member not found"));
 
@@ -114,11 +157,48 @@ public class MemberApplicationService implements
             throw ApiException.forbidden("No puedes modificar miembros de otra organización");
         }
 
-        member.setRoleId(newRoleId);
+        // --- PROTECCIÓN DE CUENTA ADMINISTRATIVA ---
+        // Obtener el ID del usuario autenticado desde el contexto de seguridad
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UUID authenticatedUserId) {
+            // Si el usuario está intentando modificarse a sí mismo
+            if (member.getUserId().equals(authenticatedUserId)) {
+                // Verificar si es un OWNER o ADMIN (puedes ajustar según tus IDs de roles si es necesario o por nombre)
+                String currentRoleName = roleRepository.findById(member.getRoleId()).map(RoleEntity::getName).orElse("");
+                
+                // Si intenta cambiar su ROLE o su STATUS y es dueño, lo bloqueamos
+                if (currentRoleName.equals("OWNER") || currentRoleName.equals("ADMIN")) {
+                    if ((newRoleName != null && !newRoleName.equalsIgnoreCase(currentRoleName)) || 
+                        (newRoleId != null && !newRoleId.equals(member.getRoleId())) ||
+                        (newStatus != null && !newStatus.equalsIgnoreCase(member.getStatus()))) {
+                        throw ApiException.forbidden("No puedes cambiar tu propio rol o estado siendo el Administrador Principal.");
+                    }
+                }
+            }
+        }
+        // --------------------------------------------
+
+        if (newRoleName != null && !newRoleName.isBlank()) {
+            RoleEntity role = roleRepository.findByName(newRoleName.toUpperCase())
+                    .orElseThrow(() -> ApiException.badRequest("Rol '" + newRoleName + "' no encontrado."));
+            member.setRoleId(role.getId());
+        } else if (newRoleId != null) {
+            member.setRoleId(newRoleId);
+        }
+
         if (newPin != null && !newPin.isBlank()) {
+            // Validar PIN actual si se intenta cambiar (Seguridad)
+            if (member.getPin() != null && (currentPin == null || !member.getPin().equals(currentPin))) {
+                throw ApiException.unauthorized("El PIN actual es incorrecto");
+            }
             member.setPin(newPin); // Positively fast lookup
         }
-        member.setSalary(newSalary);
+        if (newSalary != null) {
+            member.setSalary(newSalary);
+        }
+        if (newStatus != null && !newStatus.isBlank()) {
+            member.setStatus(newStatus.toUpperCase());
+        }
 
         return memberRepository.save(member);
     }
@@ -132,35 +212,80 @@ public class MemberApplicationService implements
             throw ApiException.forbidden("No puedes modificar miembros de otra organización");
         }
 
+        // Bloquear auto-desactivación del OWNER
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UUID authenticatedUserId && member.getUserId().equals(authenticatedUserId)) {
+            String currentRoleName = roleRepository.findById(member.getRoleId()).map(RoleEntity::getName).orElse("");
+            if (currentRoleName.equals("OWNER") || currentRoleName.equals("ADMIN")) {
+                throw ApiException.forbidden("No puedes desactivar tu propia cuenta desde aquí.");
+            }
+        }
+
         member.setActive(false);
         memberRepository.save(member);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public AuthResult execute(UUID organizationId, String pin) {
-        OrganizationMember member = memberRepository.findByOrganizationAndPin(organizationId, pin)
-                .orElseThrow(() -> ApiException.unauthorized("PIN incorrecto."));
+    public AuthResult execute(UUID organizationId, String email, String dni, String pin) {
+        OrganizationMember member = null;
 
-        if (!member.isActive()) {
-            throw ApiException.forbidden("El empleado está desactivado.");
+        // Unified Search Strategy: Find member by identifier across ALL organizations
+        if (email != null && !email.isBlank()) {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> ApiException.unauthorized("Email no registrado."));
+            member = memberRepository.findByUserId(user.getId()).stream()
+                    .filter(m -> m.isActive() && matchesAndMigratePin(pin, m))
+                    .findFirst()
+                    .orElseThrow(() -> ApiException.unauthorized("PIN incorrecto."));
+        } else if (dni != null && !dni.isBlank()) {
+            User user = userRepository.findByDni(dni)
+                    .orElseThrow(() -> ApiException.unauthorized("DNI no registrado."));
+            member = memberRepository.findByUserId(user.getId()).stream()
+                    .filter(m -> m.isActive() && matchesAndMigratePin(pin, m))
+                    .findFirst()
+                    .orElseThrow(() -> ApiException.unauthorized("PIN incorrecto o local no encontrado."));
+        } else if (organizationId != null) {
+            member = memberRepository.findAllByOrganization(organizationId).stream()
+                    .filter(m -> m.isActive() && matchesAndMigratePin(pin, m))
+                    .findFirst()
+                    .orElseThrow(() -> ApiException.unauthorized("PIN incorrecto en este local."));
         }
 
-        User user = userRepository.findById(member.getUserId())
-                .orElseThrow(() -> ApiException.badRequest("Usuario asociado no encontrado."));
+        if (member == null) {
+            throw ApiException.badRequest("Se requiere Email, DNI o Local para el login.");
+        }
 
+        if (!member.isActive()) {
+            throw ApiException.forbidden("Tu cuenta de empleado está desactivada.");
+        }
+
+        // Fetch User details for the token (needed for name, superAdmin, etc.)
+        User user = userRepository.findById(member.getUserId())
+                .orElseThrow(() -> ApiException.notFound("User not found"));
         // Generate a standard JWT token impersonating this user
         String token = jwtProvider.generateToken(
                 user.getId(),
                 user.getEmail(),
                 user.isSuperAdmin());
 
+        // Fetch Role Name
+        String roleName = roleRepository.findById(member.getRoleId())
+                .map(RoleEntity::getName)
+                .orElse("WAITER");
+
         return new AuthResult(
                 token,
                 user.getId(),
+                member.getId(),
+                member.getOrganizationId(),
                 user.getEmail(),
                 user.getFullName(),
-                user.isSuperAdmin());
+                user.isSuperAdmin(),
+                roleName,
+                user.isNotificationsEnabled(),
+                user.isSoundEnabled(),
+                user.isDarkModeEnabled());
     }
 
     @Override
@@ -180,5 +305,18 @@ public class MemberApplicationService implements
         }
 
         return member;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StaffPerformance execute(StaffPerformanceQuery query) {
+        // En este sistema POS, usamos userId (del token) como waiterId en las órdenes
+        long ordersToday = orderRepository.countByWaiterAndDate(query.userId(), java.time.LocalDate.now());
+        
+        // Tablas asignadas: Podríamos contar tablas únicas en órdenes activas del mesero
+        // Por ahora lo dejamos en 0 o implementamos una búsqueda simple si es necesario
+        int tablesAssigned = 0; 
+        
+        return new StaffPerformance((int) ordersToday, tablesAssigned, 5.0);
     }
 }

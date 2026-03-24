@@ -23,6 +23,8 @@ public class ZoneWebMapper {
                 .name(request.name())
                 .description(request.description())
                 .active(request.active())
+                .entrancePosX(request.entrancePosX())
+                .entrancePosY(request.entrancePosY())
                 .build();
     }
 
@@ -35,6 +37,8 @@ public class ZoneWebMapper {
                 zone.getId(),
                 zone.getName(),
                 zone.getDescription(),
-                zone.isActive());
+                zone.isActive(),
+                zone.getEntrancePosX(),
+                zone.getEntrancePosY());
     }
 }

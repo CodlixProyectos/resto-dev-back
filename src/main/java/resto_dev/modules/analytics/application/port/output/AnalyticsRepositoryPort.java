@@ -4,18 +4,18 @@ import resto_dev.modules.analytics.domain.model.CategorySales;
 import resto_dev.modules.analytics.domain.model.RecentActivity;
 import resto_dev.modules.analytics.domain.model.SalesSummary;
 import resto_dev.modules.analytics.domain.model.TopSellingProduct;
+import resto_dev.shared.model.DateRange;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public interface AnalyticsRepositoryPort {
 
-    SalesSummary getSalesSummary(UUID organizationId, LocalDateTime startDate, LocalDateTime endDate);
+    SalesSummary getSalesSummary(UUID organizationId, DateRange dateRange);
 
-    List<TopSellingProduct> getTopSellingProducts(UUID organizationId, LocalDateTime startDate, LocalDateTime endDate, int limit);
+    List<TopSellingProduct> getTopSellingProducts(UUID organizationId, DateRange dateRange, int limit, int offset);
 
-    List<RecentActivity> getRecentActivity(UUID organizationId, int limit);
+    List<RecentActivity> getRecentActivity(UUID organizationId, DateRange dateRange, int limit, int offset);
 
-    List<CategorySales> getSalesByCategory(UUID organizationId, LocalDateTime startDate, LocalDateTime endDate);
+    List<CategorySales> getSalesByCategory(UUID organizationId, DateRange dateRange);
 }

@@ -40,6 +40,16 @@ public class TenantFilter extends OncePerRequestFilter {
 
         String orgIdHeader = request.getHeader(TENANT_HEADER);
 
+        // Check if organizationId was pre-resolved by JwtAuthFilter (via ticket)
+        Object preResolvedOrgId = request.getAttribute("organizationId");
+        if (preResolvedOrgId instanceof UUID orgId) {
+            orgIdHeader = orgId.toString();
+        }
+        // Support for EventSource (SSE) which doesn't allow custom headers
+        else if (!StringUtils.hasText(orgIdHeader)) {
+            orgIdHeader = request.getParameter("organizationId");
+        }
+
         if (StringUtils.hasText(orgIdHeader)) {
             try {
                 UUID organizationId = UUID.fromString(orgIdHeader);
@@ -73,15 +83,19 @@ public class TenantFilter extends OncePerRequestFilter {
      * @return true if access is granted, false otherwise.
      */
     private boolean setupTenantContext(UUID organizationId) {
+        var orgOpt = organizationRepository.findById(organizationId);
+        if (orgOpt.isEmpty()) {
+            log.warn("Organization {} not found", organizationId);
+            return false;
+        }
+
+        var org = orgOpt.get();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
             // Unauthenticated (e.g. public endpoints like public menu)
-            // Allow setting schema blindly. Security rules will protect endpoints anyway.
-            organizationRepository.findById(organizationId).ifPresent(org -> {
-                TenantContext.setCurrentTenant(org.getSchemaName());
-                log.debug("Set tenant context to {} for unauthenticated request", org.getSchemaName());
-            });
+            TenantContext.setCurrentTenant(org.getSchemaName());
+            log.debug("Set tenant context to {} for unauthenticated request", org.getSchemaName());
             return true;
         }
 
@@ -91,13 +105,9 @@ public class TenantFilter extends OncePerRequestFilter {
         boolean isSuperAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
 
-        boolean isMember = memberRepository.findByOrganizationIdAndUserId(organizationId, userId).size() > 0;
-
-        if (isMember || isSuperAdmin) {
-            organizationRepository.findById(organizationId).ifPresent(org -> {
-                TenantContext.setCurrentTenant(org.getSchemaName());
-                log.debug("Set tenant context to {} for user {}", org.getSchemaName(), userId);
-            });
+        if (isSuperAdmin || memberRepository.existsByOrganizationIdAndUserId(organizationId, userId)) {
+            TenantContext.setCurrentTenant(org.getSchemaName());
+            log.debug("Set tenant context to {} for user {}", org.getSchemaName(), userId);
             return true;
         } else {
             log.warn("User {} attempted to access organization {} without membership", userId, organizationId);

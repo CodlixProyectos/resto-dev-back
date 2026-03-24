@@ -24,7 +24,15 @@ public interface OrganizationMemberJpaRepository extends JpaRepository<Organizat
 
     List<OrganizationMemberJpaEntity> findByOrganizationIdAndUserId(UUID organizationId, UUID userId);
 
+    boolean existsByOrganizationIdAndUserId(UUID organizationId, UUID userId);
+
     Optional<OrganizationMemberJpaEntity> findByOrganizationIdAndPin(UUID organizationId, String pin);
+
+    @Query("SELECT m FROM OrganizationMemberJpaEntity m JOIN m.user u WHERE u.email = :email AND m.pin = :pin AND m.active = true")
+    Optional<OrganizationMemberJpaEntity> findByUserEmailAndPin(@Param("email") String email, @Param("pin") String pin);
+
+    @Query("SELECT m FROM OrganizationMemberJpaEntity m JOIN m.user u WHERE u.dni = :dni AND m.pin = :pin AND m.active = true")
+    Optional<OrganizationMemberJpaEntity> findByUserDniAndPin(@Param("dni") String dni, @Param("pin") String pin);
 
     boolean existsByOrganizationIdAndUserIdAndRoleId(UUID organizationId, UUID userId, UUID roleId);
 

@@ -77,7 +77,7 @@ public class ZoneController {
 
         PaginatedResponse<ZoneResponse> pageResponse = PaginatedResponse.<ZoneResponse>builder()
                 .data(responses)
-                .page(pageModel.page() + 1) // ajustado a 1-indexed para el cliente
+                .page(pageModel.page())
                 .size(pageModel.size())
                 .totalElements(pageModel.totalElements())
                 .totalPages(pageModel.totalPages())

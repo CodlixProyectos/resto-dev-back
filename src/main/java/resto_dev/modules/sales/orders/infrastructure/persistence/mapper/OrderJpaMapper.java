@@ -20,11 +20,15 @@ public class OrderJpaMapper {
         Order order = Order.builder()
                 .id(entity.getId())
                 .tableId(entity.getTableId())
+                .tableNumber(entity.getTableNumber())
+                .type(entity.getType())
+                .customerName(entity.getCustomerName())
                 .status(entity.getStatus())
                 .notes(entity.getNotes())
                 .subtotal(entity.getSubtotal())
                 .tax(entity.getTax())
                 .total(entity.getTotal())
+                .waiterId(entity.getWaiterId())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -65,12 +69,19 @@ public class OrderJpaMapper {
 
         OrderJpaEntity entity = OrderJpaEntity.builder()
                 .tableId(order.getTableId())
+                .tableNumber(order.getTableNumber())
+                .type(order.getType())
+                .customerName(order.getCustomerName())
                 .status(order.getStatus())
                 .notes(order.getNotes())
                 .subtotal(order.getSubtotal())
                 .tax(order.getTax())
                 .total(order.getTotal())
+                .waiterId(order.getWaiterId())
                 .build();
+
+        entity.setCreatedAt(order.getCreatedAt());
+        entity.setUpdatedAt(order.getUpdatedAt());
 
         if (order.getId() != null) {
             entity.setId(order.getId());
@@ -102,6 +113,9 @@ public class OrderJpaMapper {
                 .status(item.getStatus())
                 .build();
 
+        entity.setCreatedAt(item.getCreatedAt());
+        entity.setUpdatedAt(item.getUpdatedAt());
+        
         if (item.getId() != null) {
             entity.setId(item.getId());
         }

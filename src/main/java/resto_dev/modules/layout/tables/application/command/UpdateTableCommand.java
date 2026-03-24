@@ -11,5 +11,11 @@ public record UpdateTableCommand(
         String tableNumber,
         int capacity,
         TableStatus status,
-        boolean active) {
+        boolean active,
+        Double posX,
+        Double posY,
+        Double width,
+        Double height,
+        Integer rotation,
+        String shape) {
 }

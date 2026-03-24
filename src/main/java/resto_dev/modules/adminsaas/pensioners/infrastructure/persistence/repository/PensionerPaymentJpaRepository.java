@@ -14,12 +14,30 @@ import java.util.UUID;
 @Repository
 public interface PensionerPaymentJpaRepository extends JpaRepository<PensionerPaymentJpaEntity, UUID> {
     
-    @Query(value = "SELECT * FROM admin.pensioner_payments " +
-           "WHERE pensioner_id = :pensionerId " +
-           "AND EXTRACT(MONTH FROM date) = :month " +
-           "AND EXTRACT(YEAR FROM date) = :year " +
-           "ORDER BY date DESC, created_at DESC", 
-           nativeQuery = true)
+    @Query("SELECT p FROM PensionerPaymentJpaEntity p " +
+           "WHERE p.pensionerId = :pensionerId " +
+           "AND p.date BETWEEN :startDate AND :endDate " +
+           "ORDER BY p.date DESC, p.createdAt DESC")
+    Page<PensionerPaymentJpaEntity> findByPensionerAndDateRange(
+            @Param("pensionerId") UUID pensionerId,
+            @Param("startDate") java.time.LocalDate startDate,
+            @Param("endDate") java.time.LocalDate endDate,
+            Pageable pageable
+    );
+
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM PensionerPaymentJpaEntity p " +
+           "WHERE p.pensionerId = :pensionerId " +
+           "AND p.date BETWEEN :startDate AND :endDate")
+    BigDecimal sumAmountByPensionerAndDateRange(
+            @Param("pensionerId") UUID pensionerId,
+            @Param("startDate") java.time.LocalDate startDate,
+            @Param("endDate") java.time.LocalDate endDate);
+
+    @Query("SELECT p FROM PensionerPaymentJpaEntity p " +
+           "WHERE p.pensionerId = :pensionerId " +
+           "AND MONTH(p.date) = :month " +
+           "AND YEAR(p.date) = :year " +
+           "ORDER BY p.date DESC, p.createdAt DESC")
     Page<PensionerPaymentJpaEntity> findByPensionerAndMonth(
             @Param("pensionerId") UUID pensionerId,
             @Param("month") int month,
@@ -27,11 +45,10 @@ public interface PensionerPaymentJpaRepository extends JpaRepository<PensionerPa
             Pageable pageable
     );
 
-    @Query(value = "SELECT COALESCE(SUM(amount), 0) FROM admin.pensioner_payments " +
-           "WHERE pensioner_id = :pensionerId " +
-           "AND EXTRACT(MONTH FROM date) = :month " +
-           "AND EXTRACT(YEAR FROM date) = :year", 
-           nativeQuery = true)
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM PensionerPaymentJpaEntity p " +
+           "WHERE p.pensionerId = :pensionerId " +
+           "AND MONTH(p.date) = :month " +
+           "AND YEAR(p.date) = :year")
     BigDecimal sumAmountByPensionerAndMonth(
             @Param("pensionerId") UUID pensionerId,
             @Param("month") int month,

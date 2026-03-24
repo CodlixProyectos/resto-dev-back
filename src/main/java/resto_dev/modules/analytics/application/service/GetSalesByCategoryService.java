@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.analytics.application.port.input.GetSalesByCategoryUseCase;
 import resto_dev.modules.analytics.application.port.output.AnalyticsRepositoryPort;
 import resto_dev.modules.analytics.domain.model.CategorySales;
+import resto_dev.shared.model.DateRange;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,13 +20,13 @@ public class GetSalesByCategoryService implements GetSalesByCategoryUseCase {
     private final AnalyticsRepositoryPort repositoryPort;
 
     @Override
-    public List<CategorySales> execute(UUID organizationId, LocalDateTime startDate, LocalDateTime endDate) {
-        if (startDate == null) {
-            startDate = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+    public List<CategorySales> execute(UUID organizationId, DateRange dateRange) {
+        if (dateRange == null || dateRange.getStartDate() == null) {
+            dateRange = DateRange.of(
+                LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0),
+                LocalDateTime.now()
+            );
         }
-        if (endDate == null) {
-            endDate = LocalDateTime.now();
-        }
-        return repositoryPort.getSalesByCategory(organizationId, startDate, endDate);
+        return repositoryPort.getSalesByCategory(organizationId, dateRange);
     }
 }

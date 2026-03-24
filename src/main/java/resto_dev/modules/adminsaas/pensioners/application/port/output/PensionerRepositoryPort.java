@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface PensionerRepositoryPort {
     Pensioner save(Pensioner pensioner);
     Optional<Pensioner> findById(UUID id);
-    Page<Pensioner> findAllByOrganizationId(UUID organizationId, Pageable pageable);
+    Page<Pensioner> findAllByOrganizationId(UUID organizationId, Pageable pageable, String search);
+    boolean existsByOrganizationIdAndDni(UUID organizationId, String dni);
+    boolean existsByOrganizationIdAndEmail(UUID organizationId, String email);
     void deleteById(UUID id);
 }

@@ -39,16 +39,27 @@ public class PensionerPaymentApplicationService implements AddPensionerPaymentUs
     }
 
     @Override
-    public Page<PensionerPayment> execute(UUID pensionerId, int month, int year, Pageable pageable) {
+    public Page<PensionerPayment> execute(UUID pensionerId, int month, int year, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        if (startDate != null && endDate != null) {
+            return repository.findByPensionerAndDateRange(pensionerId, startDate, endDate, pageable);
+        }
         return repository.findByPensionerAndMonth(pensionerId, month, year, pageable);
     }
 
     @Override
-    public PensionerSummaryResponse execute(UUID pensionerId, int month, int year) {
-        BigDecimal totalConsumed = consumptionRepository.sumByPensionerAndMonth(pensionerId, month, year);
-        BigDecimal totalPaid = repository.sumByPensionerAndMonth(pensionerId, month, year);
+    public PensionerSummaryResponse execute(UUID pensionerId, int month, int year, LocalDate startDate, LocalDate endDate) {
+        BigDecimal totalConsumed;
+        BigDecimal totalPaid;
+
+        if (startDate != null && endDate != null) {
+            totalConsumed = consumptionRepository.sumByPensionerAndDateRange(pensionerId, startDate, endDate);
+            totalPaid = repository.sumByPensionerAndDateRange(pensionerId, startDate, endDate);
+        } else {
+            totalConsumed = consumptionRepository.sumByPensionerAndMonth(pensionerId, month, year);
+            totalPaid = repository.sumByPensionerAndMonth(pensionerId, month, year);
+        }
         BigDecimal balance = totalConsumed.subtract(totalPaid);
-        
+
         return new PensionerSummaryResponse(totalConsumed, totalPaid, balance);
     }
 

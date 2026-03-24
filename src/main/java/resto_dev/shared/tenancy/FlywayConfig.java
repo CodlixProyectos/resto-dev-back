@@ -24,15 +24,25 @@ public class FlywayConfig {
     public Flyway flyway(DataSource dataSource) {
         log.info("Starting Flyway Database Migrations...");
 
-        // 1. Migrate Global Admin Schema
+        // 1. Ensure admin schema exists
+        try (Connection connection = dataSource.getConnection()) {
+            connection.createStatement().execute("CREATE SCHEMA IF NOT EXISTS \"admin\"");
+        } catch (SQLException e) {
+            log.error("Failed to create admin schema", e);
+        }
+
+        // 2. Migrate Global Admin Schema
         Flyway flywayAdmin = Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/admin")
                 .schemas("admin")
                 .defaultSchema("admin")
                 .baselineOnMigrate(true)
+                .ignoreMigrationPatterns("*:missing") // Handle consolidated/deleted files
+                .outOfOrder(true)                      // Allow V1 after higher versions if needed
                 .load();
 
+        flywayAdmin.repair(); // Clean up metadata for deleted files
         flywayAdmin.migrate();
         log.info("Admin schema migration completed successfully.");
 
@@ -73,8 +83,11 @@ public class FlywayConfig {
                 .schemas(tenantSchema)
                 .defaultSchema(tenantSchema)
                 .baselineOnMigrate(true)
+                .ignoreMigrationPatterns("*:missing")
+                .outOfOrder(true)
                 .load();
 
+        flywayTenant.repair();
         flywayTenant.migrate();
         log.info("Tenant schema migration completed for: {}", tenantSchema);
     }

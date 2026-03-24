@@ -22,6 +22,9 @@ public class UserJpaMapper {
                 .avatarUrl(entity.getAvatarUrl())
                 .superAdmin(entity.isSuperAdmin())
                 .active(entity.isActive())
+                .notificationsEnabled(entity.isNotificationsEnabled())
+                .soundEnabled(entity.isSoundEnabled())
+                .darkModeEnabled(entity.isDarkModeEnabled())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -37,6 +40,9 @@ public class UserJpaMapper {
                 .avatarUrl(user.getAvatarUrl())
                 .superAdmin(user.isSuperAdmin())
                 .active(user.isActive())
+                .notificationsEnabled(user.isNotificationsEnabled())
+                .soundEnabled(user.isSoundEnabled())
+                .darkModeEnabled(user.isDarkModeEnabled())
                 .build();
 
         if (user.getId() != null) {

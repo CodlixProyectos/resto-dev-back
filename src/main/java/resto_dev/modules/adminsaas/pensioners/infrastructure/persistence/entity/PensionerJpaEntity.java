@@ -14,7 +14,7 @@ import resto_dev.shared.common.BaseEntity;
 import java.util.UUID;
 
 @Entity
-@Table(name = "pensioners", schema = "admin")
+@Table(name = "pensioners")
 @Getter
 @Setter
 @Builder

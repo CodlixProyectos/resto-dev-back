@@ -55,14 +55,16 @@ public class PensionerPaymentController {
             @PathVariable UUID pensionerId,
             @RequestParam(defaultValue = "0") int month,
             @RequestParam(defaultValue = "0") int year,
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int limit) {
 
         int resolvedMonth = month == 0 ? LocalDate.now().getMonthValue() : month;
         int resolvedYear = year == 0 ? LocalDate.now().getYear() : year;
 
         Page<PensionerPayment> result = getUseCase.execute(
-                pensionerId, resolvedMonth, resolvedYear, PageRequest.of(page - 1, limit)
+                pensionerId, resolvedMonth, resolvedYear, startDate, endDate, PageRequest.of(page, limit)
         );
 
         return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(result.map(this::toResponse))));

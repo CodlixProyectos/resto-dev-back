@@ -10,5 +10,11 @@ public record CreateTableCommand(
         UUID zoneId,
         String tableNumber,
         int capacity,
-        TableStatus status) {
+        TableStatus status,
+        Double posX,
+        Double posY,
+        Double width,
+        Double height,
+        Integer rotation,
+        String shape) {
 }

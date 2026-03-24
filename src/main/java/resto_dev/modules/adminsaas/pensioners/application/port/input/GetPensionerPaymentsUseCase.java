@@ -6,6 +6,8 @@ import resto_dev.modules.adminsaas.pensioners.domain.model.PensionerPayment;
 
 import java.util.UUID;
 
+import java.time.LocalDate;
+
 public interface GetPensionerPaymentsUseCase {
-    Page<PensionerPayment> execute(UUID pensionerId, int month, int year, Pageable pageable);
+    Page<PensionerPayment> execute(UUID pensionerId, int month, int year, LocalDate startDate, LocalDate endDate, Pageable pageable);
 }
