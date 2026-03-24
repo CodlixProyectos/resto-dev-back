@@ -20,6 +20,12 @@ public class TableJpaMapper {
                 .capacity(entity.getCapacity())
                 .status(entity.getStatus())
                 .active(entity.isActive())
+                .posX(entity.getPosX())
+                .posY(entity.getPosY())
+                .width(entity.getWidth())
+                .height(entity.getHeight())
+                .rotation(entity.getRotation())
+                .shape(entity.getShape())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -42,11 +48,20 @@ public class TableJpaMapper {
                 .capacity(table.getCapacity())
                 .status(table.getStatus())
                 .active(table.isActive())
+                .posX(table.getPosX())
+                .posY(table.getPosY())
+                .width(table.getWidth())
+                .height(table.getHeight())
+                .rotation(table.getRotation())
+                .shape(table.getShape())
                 .build();
 
         if (table.getId() != null) {
             entity.setId(table.getId());
         }
+
+        entity.setCreatedAt(table.getCreatedAt());
+        entity.setUpdatedAt(table.getUpdatedAt());
 
         return entity;
     }

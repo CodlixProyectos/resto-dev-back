@@ -31,6 +31,12 @@ public class OrganizationWebMapper {
                 o.getSchemaName(),
                 o.getType(),
                 o.getOwnerId(),
-                o.isActive());
+                o.isActive(),
+                o.getLegalName(),
+                o.getBusinessId(),
+                o.getEmail(),
+                o.getPhone(),
+                o.getAddress(),
+                o.getLogoUrl());
     }
 }

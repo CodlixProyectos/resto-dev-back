@@ -79,4 +79,9 @@ public class TableRepositoryAdapter implements TableRepositoryPort {
                 pageResult.getTotalElements(),
                 pageResult.getTotalPages());
     }
+
+    @Override
+    public long countActiveByZoneId(UUID zoneId) {
+        return tableJpaRepository.countByZoneIdAndActiveTrue(zoneId);
+    }
 }

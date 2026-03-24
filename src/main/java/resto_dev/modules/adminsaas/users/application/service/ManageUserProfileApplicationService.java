@@ -36,6 +36,19 @@ public class ManageUserProfileApplicationService
 
     @Override
     @Transactional
+    public User updateUserPreferences(UUID userId, boolean notificationsEnabled, boolean soundEnabled, boolean darkModeEnabled) {
+        User user = userRepositoryPort.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Usuario no encontrado"));
+
+        user.setNotificationsEnabled(notificationsEnabled);
+        user.setSoundEnabled(soundEnabled);
+        user.setDarkModeEnabled(darkModeEnabled);
+
+        return userRepositoryPort.save(user);
+    }
+
+    @Override
+    @Transactional
     public void updateUserPassword(UUID userId, String currentPassword, String newPassword) {
         User user = userRepositoryPort.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Usuario no encontrado"));

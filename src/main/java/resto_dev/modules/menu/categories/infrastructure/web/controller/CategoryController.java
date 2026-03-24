@@ -79,7 +79,7 @@ public class CategoryController {
 
                 PaginatedResponse<CategoryResponse> pageResponse = PaginatedResponse.<CategoryResponse>builder()
                                 .data(responses)
-                                .page(pageModel.page() + 1)
+                                .page(pageModel.page())
                                 .size(pageModel.size())
                                 .totalElements(pageModel.totalElements())
                                 .totalPages(pageModel.totalPages())

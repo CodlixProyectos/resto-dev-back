@@ -33,6 +33,9 @@ public class PaymentJpaEntity {
     @Column(name = "reference_notes", length = 255)
     private String referenceNotes;
 
+    @Column(name = "evidence_url", length = 500)
+    private String evidenceUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 }

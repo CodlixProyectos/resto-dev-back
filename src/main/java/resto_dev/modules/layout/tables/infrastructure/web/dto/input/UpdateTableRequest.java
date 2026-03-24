@@ -17,5 +17,12 @@ public record UpdateTableRequest(
 
         @NotNull(message = "El estado de la mesa es obligatorio.") TableStatus status,
 
-        boolean active) {
+        boolean active,
+
+        Double posX,
+        Double posY,
+        Double width,
+        Double height,
+        Integer rotation,
+        String shape) {
 }

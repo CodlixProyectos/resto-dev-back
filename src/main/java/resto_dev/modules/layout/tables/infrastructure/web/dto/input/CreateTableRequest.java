@@ -28,5 +28,23 @@ public record CreateTableRequest(
                 example = "FREE", 
                 requiredMode = Schema.RequiredMode.NOT_REQUIRED,
                 allowableValues = {"FREE", "OCCUPIED", "DIRTY", "OUT_OF_SERVICE"})
-        TableStatus status) {
+        TableStatus status,
+
+        @Schema(description = "Posición X porcentual", example = "10.5")
+        Double posX,
+
+        @Schema(description = "Posición Y porcentual", example = "20.0")
+        Double posY,
+
+        @Schema(description = "Ancho de la mesa", example = "60.0")
+        Double width,
+
+        @Schema(description = "Alto de la mesa", example = "60.0")
+        Double height,
+
+        @Schema(description = "Rotación en grados", example = "0")
+        Integer rotation,
+
+        @Schema(description = "Forma de la mesa", example = "SQUARE")
+        String shape) {
 }

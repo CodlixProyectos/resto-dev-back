@@ -15,5 +15,6 @@ public class PaymentResponse {
     private BigDecimal amount;
     private PaymentMethod method;
     private String referenceNotes;
+    private String evidenceUrl;
     private LocalDateTime createdAt;
 }

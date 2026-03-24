@@ -8,7 +8,13 @@ import java.util.UUID;
 public record AuthResult(
                 String token,
                 UUID userId,
+                UUID memberId,
+                UUID organizationId,
                 String email,
                 String fullName,
-                boolean superAdmin) {
+                boolean superAdmin,
+                String role,
+                boolean notificationsEnabled,
+                boolean soundEnabled,
+                boolean darkModeEnabled) {
 }

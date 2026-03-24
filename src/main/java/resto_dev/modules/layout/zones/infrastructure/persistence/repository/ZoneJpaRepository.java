@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface ZoneJpaRepository extends JpaRepository<ZoneJpaEntity, UUID>, JpaSpecificationExecutor<ZoneJpaEntity> {
 
     boolean existsByName(String name);
+
+    long countByActiveTrue();
 }

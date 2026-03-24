@@ -46,7 +46,13 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
-                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/login",
+                                "/api/v1/organizations/*/auth/pin",
+                                "/api/v1/organizations/auth/pin",
+                                "/api/v1/tables/download-pdf"
+                        ).permitAll()
                         .requestMatchers("/api/v1/health/**").permitAll()
                         .requestMatchers("/api/v1/public/**").permitAll()
                         // Swagger / OpenAPI
@@ -84,7 +90,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4200"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000", 
+                "http://localhost:4200",
+                "https://resto-dev.netlify.app"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

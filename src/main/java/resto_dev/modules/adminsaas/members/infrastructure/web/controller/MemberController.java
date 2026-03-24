@@ -14,9 +14,14 @@ import resto_dev.modules.adminsaas.members.application.query.GetOrganizationMemb
 import resto_dev.modules.adminsaas.members.domain.model.OrganizationMember;
 import resto_dev.modules.adminsaas.members.infrastructure.web.dto.input.*;
 import resto_dev.modules.adminsaas.members.infrastructure.web.dto.output.OrganizationMemberResponse;
-import resto_dev.modules.adminsaas.users.application.command.AuthResult;
+import resto_dev.modules.adminsaas.members.infrastructure.web.dto.output.StaffStatsResponse;
+import resto_dev.modules.adminsaas.users.application.port.output.UserRepositoryPort;
+import resto_dev.modules.adminsaas.users.domain.model.User;
 import resto_dev.shared.responses.ApiResponse;
 import resto_dev.shared.responses.PaginatedResponse;
+import resto_dev.shared.security.permissions.RoleEntity;
+import resto_dev.shared.security.permissions.RoleRepository;
+// import java.math.BigDecimal; // Removed because it's reported as unused
 
 import java.util.List;
 import java.util.UUID;
@@ -29,10 +34,13 @@ public class MemberController {
 
         private final GetMyPermissionsUseCase getMyPermissionsPort;
         private final GetOrganizationMembersUseCase getOrganizationMembersUseCase;
+        private final GetOrganizationMemberUseCase getOrganizationMemberUseCase;
+        private final GetStaffStatsUseCase getStaffStatsUseCase;
         private final AddOrganizationMemberUseCase addOrganizationMemberUseCase;
         private final UpdateOrganizationMemberUseCase updateOrganizationMemberUseCase;
         private final DeactivateOrganizationMemberUseCase deactivateOrganizationMemberUseCase;
-        private final PinLoginOrganizationMemberUseCase pinLoginOrganizationMemberUseCase;
+        private final UserRepositoryPort userRepositoryPort;
+        private final RoleRepository roleRepository;
 
         @Operation(summary = "Obtener mis permisos", description = "Devuelve los permisos del usuario actual en esta empresa.")
         @GetMapping("/my-permissions")
@@ -51,7 +59,8 @@ public class MemberController {
                         @RequestParam(defaultValue = "1") int page,
                         @RequestParam(defaultValue = "10") int limit,
                         @RequestParam(required = false) String search,
-                        @RequestParam(required = false, name = "active") Boolean isActive) {
+                        @RequestParam(required = false, name = "active") Boolean isActive,
+                        @RequestParam(required = false) String role) {
 
                 var query = GetOrganizationMembersQuery.builder()
                                 .organizationId(organizationId)
@@ -59,6 +68,7 @@ public class MemberController {
                                 .size(limit)
                                 .search(search)
                                 .isActive(isActive)
+                                .role(role)
                                 .build();
 
                 PaginatedResponse<OrganizationMember> result = getOrganizationMembersUseCase.getMembers(query);
@@ -77,14 +87,46 @@ public class MemberController {
                 return ResponseEntity.ok(ApiResponse.ok(response));
         }
 
-        @Operation(summary = "Contratar o Invitar Empleado", description = "Asigna un empleado a la organización con un Role y un PIN POS.")
+        @Operation(summary = "Obtener detalle de empleado", description = "Devuelve la información completa de un empleado por su ID.")
+        @GetMapping("/members/{memberId}")
+        public ResponseEntity<ApiResponse<OrganizationMemberResponse>> getMemberById(
+                        @PathVariable UUID organizationId,
+                        @PathVariable UUID memberId) {
+
+                OrganizationMember member = getOrganizationMemberUseCase.getMember(organizationId, memberId);
+                return ResponseEntity.ok(ApiResponse.ok(toResponse(member)));
+        }
+
+        @Operation(summary = "Obtener estadísticas de personal", description = "Devuelve el conteo de empleados y la nómina total.")
+        @GetMapping("/members/stats")
+        public ResponseEntity<ApiResponse<StaffStatsResponse>> getStats(
+                        @PathVariable UUID organizationId) {
+
+                var stats = getStaffStatsUseCase.execute(organizationId);
+                var response = new StaffStatsResponse(
+                                stats.totalEmployees(),
+                                stats.activeCount(),
+                                stats.onLeaveCount(),
+                                stats.totalPayroll());
+
+                return ResponseEntity.ok(ApiResponse.ok(response));
+        }
+
+        @Operation(summary = "Contratar o Invitar Empleado", description = "Crea un empleado directamente en la organización con nombre, rol y PIN POS.")
         @PostMapping("/members")
         public ResponseEntity<ApiResponse<OrganizationMemberResponse>> addMember(
                         @PathVariable UUID organizationId,
                         @Valid @RequestBody AddMemberRequest request) {
 
                 OrganizationMember member = addOrganizationMemberUseCase.execute(
-                                organizationId, request.getEmail(), request.getRoleId(), request.getPin());
+                                organizationId,
+                                request.getFullName(),
+                                request.getEmail(),
+                                request.getDni(),
+                                request.getPhoneNumber(),
+                                request.getRoleName(),
+                                request.getPin(),
+                                request.getSalary());
 
                 return ResponseEntity.status(HttpStatus.CREATED)
                                 .body(ApiResponse.created(toResponse(member), "Empleado registrado exitosamente"));
@@ -98,7 +140,7 @@ public class MemberController {
                         @Valid @RequestBody UpdateMemberRequest request) {
 
                 OrganizationMember member = updateOrganizationMemberUseCase.execute(
-                                organizationId, memberId, request.getRoleId(), request.getPin());
+                                organizationId, memberId, request.getRoleId(), request.getCurrentPin(), request.getPin(), request.getSalary(), request.getStatus(), request.getRoleName());
 
                 return ResponseEntity.ok(ApiResponse.ok(toResponse(member), "Empleado actualizado exitosamente"));
         }
@@ -114,24 +156,41 @@ public class MemberController {
                 return ResponseEntity.ok(ApiResponse.ok(null, "Empleado desactivado exitosamente"));
         }
 
-        @Operation(summary = "POS PIN Login", description = "Login rápio usando PIN para tablets de Punto de Venta o Cocina.")
-        @PostMapping("/auth/pin")
-        public ResponseEntity<ApiResponse<AuthResult>> pinLogin(
-                        @PathVariable UUID organizationId,
-                        @Valid @RequestBody PinLoginRequest request) {
-
-                AuthResult result = pinLoginOrganizationMemberUseCase.execute(organizationId, request.getPin());
-
-                return ResponseEntity.ok(ApiResponse.ok(result, "POS Login Successful"));
-        }
-
         private OrganizationMemberResponse toResponse(OrganizationMember member) {
+                String fullName = "";
+                String email = "";
+                String phoneNumber = "";
+                String dni = "";
+                String roleName = "";
+
+                // Fetch user info
+                User user = userRepositoryPort.findById(member.getUserId()).orElse(null);
+                if (user != null) {
+                        fullName = user.getFullName();
+                        email = user.getEmail();
+                        phoneNumber = user.getPhoneNumber();
+                        dni = user.getDni();
+                }
+
+                // Fetch role name
+                RoleEntity role = roleRepository.findById(member.getRoleId()).orElse(null);
+                if (role != null) {
+                        roleName = role.getName();
+                }
+
                 return new OrganizationMemberResponse(
                                 member.getId(),
                                 member.getOrganizationId(),
                                 member.getUserId(),
                                 member.getRoleId(),
+                                fullName,
+                                email,
+                                phoneNumber,
+                                dni,
+                                roleName,
                                 member.isActive(),
+                                member.getStatus(),
+                                member.getSalary(),
                                 member.getJoinedAt());
         }
 }

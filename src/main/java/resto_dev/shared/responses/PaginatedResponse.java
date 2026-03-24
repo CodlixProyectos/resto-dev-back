@@ -28,7 +28,7 @@ public class PaginatedResponse<T> {
     public static <T> PaginatedResponse<T> of(Page<T> pageResult) {
         return PaginatedResponse.<T>builder()
                 .data(pageResult.getContent())
-                .page(pageResult.getNumber() + 1) // Frontend mostly uses 1-based indexing
+                .page(pageResult.getNumber()) // Backend standardized to 0-based
                 .size(pageResult.getSize())
                 .totalElements(pageResult.getTotalElements())
                 .totalPages(pageResult.getTotalPages())

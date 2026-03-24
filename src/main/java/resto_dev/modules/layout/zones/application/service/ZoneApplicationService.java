@@ -29,12 +29,22 @@ public class ZoneApplicationService implements
 
     @Override
     public Zone execute(CreateZoneCommand command) {
-        if (zoneRepository.existsByName(command.name())) {
-            throw new DuplicateResourceException("zona", "nombre", command.name());
+        String name = command.name();
+        if (name == null || name.isBlank() || zoneRepository.existsByName(name)) {
+            long count = zoneRepository.countActive();
+            String baseName = (name == null || name.isBlank()) ? "Nivel" : name;
+            long nextVal = count + 1;
+            name = baseName + " " + nextVal;
+            
+            // Ensure uniqueness
+            while (zoneRepository.existsByName(name)) {
+                nextVal++;
+                name = baseName + " " + nextVal;
+            }
         }
 
         Zone newZone = Zone.builder()
-                .name(command.name())
+                .name(name)
                 .description(command.description())
                 .active(true)
                 .build();
@@ -59,6 +69,8 @@ public class ZoneApplicationService implements
         zone.setName(command.name());
         zone.setDescription(command.description());
         zone.setActive(command.active());
+        zone.setEntrancePosX(command.entrancePosX());
+        zone.setEntrancePosY(command.entrancePosY());
 
         return zoneRepository.save(zone);
     }

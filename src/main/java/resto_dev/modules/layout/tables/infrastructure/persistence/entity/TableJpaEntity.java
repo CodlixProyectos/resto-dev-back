@@ -33,6 +33,24 @@ public class TableJpaEntity extends BaseEntity {
     @Column(nullable = false, length = 20)
     private TableStatus status;
 
-    @Column(nullable = false)
+    @Column(name = "active", nullable = false)
     private boolean active;
+
+    @Column(name = "pos_x")
+    private Double posX;
+
+    @Column(name = "pos_y")
+    private Double posY;
+
+    @Column(name = "width")
+    private Double width;
+
+    @Column(name = "height")
+    private Double height;
+
+    @Column(name = "rotation")
+    private Integer rotation;
+
+    @Column(name = "shape", length = 20)
+    private String shape;
 }

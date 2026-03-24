@@ -9,7 +9,11 @@ import java.util.UUID;
 @Builder
 public record SearchOrdersQuery(
         UUID tableId,
-        List<OrderStatus> statuses, // Para el KDS mandaremos [PENDING_KITCHEN, PREPARING]
+        UUID waiterId,
+        List<OrderStatus> statuses, 
+        java.time.LocalDateTime startDate,
+        java.time.LocalDateTime endDate,
+        String searchTerm,
         int page,
         int size) {
 }

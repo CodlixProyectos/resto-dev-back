@@ -7,5 +7,6 @@ public record SalesSummary(
                 LocalDate date,
                 int totalOrders,
                 BigDecimal totalRevenue,
-                BigDecimal averageTicket) {
+                BigDecimal averageTicket,
+                int activeTables) {
 }

@@ -27,5 +27,7 @@ public class CheckoutRequest {
         private PaymentMethod method;
 
         private String referenceNotes;
+
+        private String evidenceUrl;
     }
 }

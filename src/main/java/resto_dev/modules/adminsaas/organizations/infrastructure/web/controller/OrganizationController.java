@@ -14,12 +14,15 @@ import resto_dev.modules.adminsaas.organizations.infrastructure.web.dto.output.O
 import resto_dev.modules.adminsaas.organizations.domain.model.Organization;
 import resto_dev.modules.adminsaas.organizations.application.port.input.CreateOrganizationUseCase;
 import resto_dev.modules.adminsaas.organizations.infrastructure.web.dto.input.CreateOrganizationRequest;
+import resto_dev.modules.adminsaas.organizations.infrastructure.web.dto.input.UpdateOrganizationRequest;
+import resto_dev.modules.adminsaas.organizations.application.port.input.UpdateOrganizationUseCase;
 import resto_dev.modules.adminsaas.organizations.infrastructure.web.mapper.OrganizationWebMapper;
 import resto_dev.modules.adminsaas.organizations.application.port.output.OrganizationRepositoryPort;
 import resto_dev.modules.adminsaas.organizations.application.port.input.GetOrganizationsUseCase;
 import resto_dev.modules.adminsaas.organizations.application.query.GetOrganizationsQuery;
 import resto_dev.shared.responses.ApiResponse;
 import resto_dev.shared.responses.PaginatedResponse;
+import resto_dev.shared.errors.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +39,7 @@ public class OrganizationController {
         private final CreateOrganizationUseCase createOrganizationPort;
         private final OrganizationWebMapper webMapper;
         private final GetOrganizationsUseCase getOrganizationsUseCase;
+        private final UpdateOrganizationUseCase updateOrganizationUseCase;
         private final OrganizationRepositoryPort organizationRepository;
 
         @Operation(summary = "Crear organización", description = "Crea una nueva organización y genera su schema client_{uuid}. "
@@ -63,6 +67,15 @@ public class OrganizationController {
                 List<OrganizationResponse> list = organizationRepository.findByOwnerId(ownerId).stream()
                                 .map(webMapper::toResponse).toList();
                 return ResponseEntity.ok(ApiResponse.ok(list));
+        }
+
+        @Operation(summary = "Obtener organización por ID", description = "Obtiene los detalles de una organización específica")
+        @GetMapping("/{id}")
+        public ResponseEntity<ApiResponse<OrganizationResponse>> getById(@PathVariable UUID id) {
+                var org = organizationRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException("Organization not found"));
+
+                return ResponseEntity.ok(ApiResponse.ok(webMapper.toResponse(org)));
         }
 
         @Operation(summary = "Listar organizaciones paginadas", description = "Lista organizaciones con soporte para búsqueda, filtrado y paginación")
@@ -93,5 +106,24 @@ public class OrganizationController {
                                 .build();
 
                 return ResponseEntity.ok(ApiResponse.ok(response));
+        }
+
+        @Operation(summary = "Actualizar organización", description = "Actualiza los datos de identidad y contacto de una organización")
+        @PutMapping("/{id}")
+        public ResponseEntity<ApiResponse<OrganizationResponse>> update(
+                        @PathVariable UUID id,
+                        @Valid @RequestBody UpdateOrganizationRequest request) {
+
+                var command = new UpdateOrganizationUseCase.UpdateOrganizationCommand(
+                                request.name(),
+                                request.legalName(),
+                                request.businessId(),
+                                request.email(),
+                                request.phone(),
+                                request.address(),
+                                request.logoUrl());
+
+                Organization updated = updateOrganizationUseCase.execute(id, command);
+                return ResponseEntity.ok(ApiResponse.ok(webMapper.toResponse(updated), "Organization updated"));
         }
 }

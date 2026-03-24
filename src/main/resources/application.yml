@@ -1,16 +1,24 @@
 spring:
   application:
     name: resto-dev
+  config:
+    import: optional:file:.env
 
   # ── Datasource ──
   datasource:
-    url: jdbc:postgresql://localhost:5432/resto_dev
-    username: postgres
-    password: 123456789
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   # ── JPA / Hibernate ──
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: none
     show-sql: true
@@ -20,6 +28,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         # ── Multi-Tenancy Configuration ──
         multiTenancy: SCHEMA
+        connection.handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_TRANSACTION
 
   # ── Auto Flyway para Esquema Global Admin ──
   flyway:
@@ -32,7 +41,7 @@ spring:
 # ── JWT ──
 app:
   jwt:
-    secret: ZXN0YS1lcy11bmEtY2xhdmUtc2VjcmV0YS1kZS1kZXNhcnJvbGxvLXF1ZS1kZWJlLXNlci1jYW1iaWFkYS1lbi1wcm9kdWNjaW9u
+    secret: ${JWT_SECRET}
     expiration-ms: 86400000  # 24 horas
 
 # ── Server ──

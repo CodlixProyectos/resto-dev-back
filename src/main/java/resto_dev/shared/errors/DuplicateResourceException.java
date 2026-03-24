@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public class DuplicateResourceException extends ApiException {
 
     public DuplicateResourceException(String resource, String field, Object value) {
-        super(String.format("Ya existe un %s con %s: %s", resource, field, value), HttpStatus.CONFLICT);
+        super(String.format("Ya existe un %s con el %s '%s'", resource, field, value), HttpStatus.CONFLICT);
     }
 
     public DuplicateResourceException(String message) {

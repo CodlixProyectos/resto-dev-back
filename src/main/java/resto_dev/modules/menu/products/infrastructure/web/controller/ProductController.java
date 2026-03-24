@@ -74,7 +74,7 @@ public class ProductController {
 
                 PaginatedResponse<ProductResponse> pageResponse = PaginatedResponse.<ProductResponse>builder()
                                 .data(responses)
-                                .page(pageModel.page() + 1)
+                                .page(pageModel.page())
                                 .size(pageModel.size())
                                 .totalElements(pageModel.totalElements())
                                 .totalPages(pageModel.totalPages())

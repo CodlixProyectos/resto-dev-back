@@ -6,4 +6,6 @@ import resto_dev.shared.common.pagination.PageModel;
 
 public interface GetActiveKitchenOrdersUseCase {
     PageModel<Order> execute(SearchOrdersQuery query);
+
+    java.math.BigDecimal calculateRevenue(SearchOrdersQuery query);
 }

@@ -17,4 +17,6 @@ public interface ZoneRepositoryPort {
     boolean existsByName(String name);
 
     PageModel<Zone> searchZones(SearchZonesQuery query);
+
+    long countActive();
 }

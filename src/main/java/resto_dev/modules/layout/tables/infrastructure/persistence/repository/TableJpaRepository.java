@@ -12,4 +12,6 @@ public interface TableJpaRepository
         extends JpaRepository<TableJpaEntity, UUID>, JpaSpecificationExecutor<TableJpaEntity> {
 
     boolean existsByTableNumberAndZoneId(String tableNumber, UUID zoneId);
+
+    long countByZoneIdAndActiveTrue(UUID zoneId);
 }

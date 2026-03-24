@@ -27,6 +27,9 @@ public class UserWebMapper {
                 user.getPhoneNumber(),
                 user.getAvatarUrl(),
                 user.isSuperAdmin(),
-                user.isActive());
+                user.isActive(),
+                user.isNotificationsEnabled(),
+                user.isSoundEnabled(),
+                user.isDarkModeEnabled());
     }
 }

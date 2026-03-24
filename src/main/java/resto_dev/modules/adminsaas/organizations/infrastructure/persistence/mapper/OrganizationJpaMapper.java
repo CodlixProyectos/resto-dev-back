@@ -17,6 +17,12 @@ public class OrganizationJpaMapper {
                 .type(entity.getType())
                 .ownerId(entity.getOwnerId())
                 .active(entity.isActive())
+                .legalName(entity.getLegalName())
+                .businessId(entity.getBusinessId())
+                .email(entity.getEmail())
+                .phone(entity.getPhone())
+                .address(entity.getAddress())
+                .logoUrl(entity.getLogoUrl())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -30,6 +36,12 @@ public class OrganizationJpaMapper {
                 .type(org.getType())
                 .ownerId(org.getOwnerId())
                 .active(org.isActive())
+                .legalName(org.getLegalName())
+                .businessId(org.getBusinessId())
+                .email(org.getEmail())
+                .phone(org.getPhone())
+                .address(org.getAddress())
+                .logoUrl(org.getLogoUrl())
                 .build();
 
         if (org.getId() != null) {

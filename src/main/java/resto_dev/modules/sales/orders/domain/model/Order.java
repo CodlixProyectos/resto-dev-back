@@ -16,11 +16,15 @@ import java.util.UUID;
 public class Order {
     private UUID id;
     private UUID tableId;
+    private String tableNumber;
+    private OrderType type;
+    private String customerName;
     private OrderStatus status;
     private String notes;
     private BigDecimal subtotal;
     private BigDecimal tax;
     private BigDecimal total;
+    private UUID waiterId;
 
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
@@ -43,8 +47,8 @@ public class Order {
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Impuesto estándar de 18% para cálculo automático (Igv)
-        this.tax = this.subtotal.multiply(new BigDecimal("0.18"));
-        this.total = this.subtotal.add(this.tax);
+        // Impuesto desactivado para simplificar el flujo (Precios finales)
+        this.tax = BigDecimal.ZERO;
+        this.total = this.subtotal;
     }
 }

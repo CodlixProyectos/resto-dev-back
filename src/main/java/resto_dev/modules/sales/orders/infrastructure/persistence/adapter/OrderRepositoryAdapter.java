@@ -39,7 +39,42 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
 
     @Override
     public PageModel<Order> searchOrders(SearchOrdersQuery query) {
-        Specification<OrderJpaEntity> spec = Specification.where((root, cq, cb) -> cb.conjunction());
+        Specification<OrderJpaEntity> spec = buildSpecification(query);
+
+        // Sort: ASC for KDS (oldest first), DESC for history (newest first)
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        if (query.statuses() != null
+                && query.statuses().contains(resto_dev.modules.sales.orders.domain.model.OrderStatus.PENDING_KITCHEN)) {
+            sort = Sort.by(Sort.Direction.ASC, "createdAt");
+        }
+
+        Pageable pageable = PageRequest.of(query.page(), query.size(), sort);
+        Page<OrderJpaEntity> pageResult = orderJpaRepository.findAll(spec, pageable);
+
+        return new PageModel<>(
+                pageResult.getContent().stream().map(orderJpaMapper::toDomain).toList(),
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements(),
+                pageResult.getTotalPages());
+    }
+
+    @Override
+    public java.math.BigDecimal sumTotalByQuery(SearchOrdersQuery query) {
+        Specification<OrderJpaEntity> spec = buildSpecification(query);
+
+        // We use the repository to find all with the spec, but we only want the sum of
+        // the "total" column.
+        // For simplicity and to avoid complex Criteria API manually, we'll use a hack or
+        // implement it properly.
+        // Proper way:
+        return orderJpaRepository.findAll(spec).stream()
+                .map(OrderJpaEntity::getTotal)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+    }
+
+    private Specification<OrderJpaEntity> buildSpecification(SearchOrdersQuery query) {
+        Specification<OrderJpaEntity> spec = Specification.where((root, query1, criteriaBuilder) -> criteriaBuilder.conjunction());
 
         if (query.tableId() != null) {
             spec = spec.and((root, cq, cb) -> cb.equal(root.get("tableId"), query.tableId()));
@@ -49,15 +84,43 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
             spec = spec.and((root, cq, cb) -> root.get("status").in(query.statuses()));
         }
 
-        // Para cocina, priorizamos el orden de llegada (las más viejas primero)
-        Pageable pageable = PageRequest.of(query.page(), query.size(), Sort.by(Sort.Direction.ASC, "createdAt"));
-        Page<OrderJpaEntity> pageResult = orderJpaRepository.findAll(spec, pageable);
+        if (query.waiterId() != null) {
+            spec = spec.and((root, cq, cb) -> cb.equal(root.get("waiterId"), query.waiterId()));
+        }
 
-        return new PageModel<>(
-                pageResult.getContent().stream().map(orderJpaMapper::toDomain).toList(),
-                pageResult.getNumber(),
-                pageResult.getSize(),
-                pageResult.getTotalElements(),
-                pageResult.getTotalPages());
+        if (query.searchTerm() != null && !query.searchTerm().isBlank()) {
+            String likePattern = "%" + query.searchTerm().toLowerCase() + "%";
+            spec = spec.and((root, cq, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("customerName")), likePattern),
+                    cb.like(cb.lower(root.get("notes")), likePattern),
+                    cb.like(cb.lower(root.get("tableNumber")), likePattern),
+                    cb.like(cb.function("CONCAT", String.class, root.get("id"), cb.literal("")), likePattern)
+            ));
+        }
+
+        if (query.startDate() != null) {
+            spec = spec.and((root, cq, cb) -> cb.greaterThanOrEqualTo(root.get("createdAt"), query.startDate()));
+        }
+
+        if (query.endDate() != null) {
+            spec = spec.and((root, cq, cb) -> cb.lessThanOrEqualTo(root.get("createdAt"), query.endDate()));
+        }
+
+        return spec;
+    }
+
+    @Override
+    public long countByWaiterAndDate(UUID waiterId, java.time.LocalDate date) {
+        return orderJpaRepository.countByWaiterIdAndDate(waiterId, date);
+    }
+
+    @Override
+    public long countByStatus(resto_dev.modules.sales.orders.domain.model.OrderStatus status) {
+        return orderJpaRepository.countByStatus(status);
+    }
+
+    @Override
+    public long countByStatusAndDate(resto_dev.modules.sales.orders.domain.model.OrderStatus status, java.time.LocalDate date) {
+        return orderJpaRepository.countByStatusAndDate(status, date);
     }
 }

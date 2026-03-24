@@ -36,6 +36,12 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     }
 
     @Override
+    public Optional<User> findByDni(String dni) {
+        return jpaRepository.findByDni(dni)
+                .map(mapper::toDomain);
+    }
+
+    @Override
     public Optional<User> findById(UUID id) {
         return jpaRepository.findById(id)
                 .map(mapper::toDomain);

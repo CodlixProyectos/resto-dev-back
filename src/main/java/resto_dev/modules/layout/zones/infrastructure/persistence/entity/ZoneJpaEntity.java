@@ -27,4 +27,10 @@ public class ZoneJpaEntity extends BaseEntity {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(name = "entrance_pos_x")
+    private Double entrancePosX;
+
+    @Column(name = "entrance_pos_y")
+    private Double entrancePosY;
 }

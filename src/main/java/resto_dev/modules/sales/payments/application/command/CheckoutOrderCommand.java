@@ -12,6 +12,7 @@ public record CheckoutOrderCommand(
     public record PaymentSplitCommand(
             BigDecimal amount,
             PaymentMethod method,
-            String referenceNotes) {
+            String referenceNotes,
+            String evidenceUrl) {
     }
 }

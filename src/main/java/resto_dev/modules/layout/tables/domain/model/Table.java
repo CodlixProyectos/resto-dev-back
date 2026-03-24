@@ -17,6 +17,12 @@ public class Table {
     private int capacity;
     private TableStatus status;
     private boolean active;
+    private Double posX;
+    private Double posY;
+    private Double width;
+    private Double height;
+    private Integer rotation;
+    private String shape;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

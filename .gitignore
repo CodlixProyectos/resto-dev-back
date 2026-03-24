@@ -19,6 +19,17 @@ target/
 *.iml
 *.ipr
 
+### Logs and temporary files
+*.txt
+*.log
+
+# Project Documentation
+docs/
+ vps_setup_guide.md
+ walkthrough.md
+ task.md
+ implementation_plan.md
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -31,3 +42,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local Environment Variables
+.env

@@ -17,6 +17,12 @@ public class TableWebMapper {
                 .tableNumber(request.tableNumber())
                 .capacity(request.capacity())
                 .status(request.status())
+                .posX(request.posX())
+                .posY(request.posY())
+                .width(request.width())
+                .height(request.height())
+                .rotation(request.rotation())
+                .shape(request.shape())
                 .build();
     }
 
@@ -27,6 +33,12 @@ public class TableWebMapper {
                 .capacity(request.capacity())
                 .status(request.status())
                 .active(request.active())
+                .posX(request.posX())
+                .posY(request.posY())
+                .width(request.width())
+                .height(request.height())
+                .rotation(request.rotation())
+                .shape(request.shape())
                 .build();
     }
 
@@ -41,6 +53,12 @@ public class TableWebMapper {
                 table.getTableNumber(),
                 table.getCapacity(),
                 table.getStatus(),
-                table.isActive());
+                table.isActive(),
+                table.getPosX(),
+                table.getPosY(),
+                table.getWidth(),
+                table.getHeight(),
+                table.getRotation(),
+                table.getShape());
     }
 }

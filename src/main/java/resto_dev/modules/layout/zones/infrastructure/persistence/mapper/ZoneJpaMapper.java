@@ -17,6 +17,8 @@ public class ZoneJpaMapper {
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .active(entity.isActive())
+                .entrancePosX(entity.getEntrancePosX())
+                .entrancePosY(entity.getEntrancePosY())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -31,6 +33,8 @@ public class ZoneJpaMapper {
                 .name(zone.getName())
                 .description(zone.getDescription())
                 .active(zone.isActive())
+                .entrancePosX(zone.getEntrancePosX())
+                .entrancePosY(zone.getEntrancePosY())
                 .build();
 
         if (zone.getId() != null) {

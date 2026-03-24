@@ -34,7 +34,7 @@ public class PublicOrderController {
 
         // Validaciones o rate-limits irían aquí en una versión masiva
 
-        CreateOrderCommand command = orderWebMapper.toCommand(request);
+        CreateOrderCommand command = orderWebMapper.toCommand(request, null);
         Order order = superCreateOrderPort.execute(command);
         OrderResponse response = orderWebMapper.toResponse(order);
 
