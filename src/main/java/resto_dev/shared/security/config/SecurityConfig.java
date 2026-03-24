@@ -93,7 +93,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000", 
                 "http://localhost:4200",
-                "https://resto-dev.netlify.app"
+                "https://resto-dev.netlify.app",
+                "http://app.167.86.80.167.sslip.io"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
