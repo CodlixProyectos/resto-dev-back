@@ -19,7 +19,7 @@ public class TableJpaMapper {
                 .tableNumber(entity.getTableNumber())
                 .capacity(entity.getCapacity())
                 .status(entity.getStatus())
-                .active(entity.isActive())
+                .active(entity.getActive())
                 .posX(entity.getPosX())
                 .posY(entity.getPosY())
                 .width(entity.getWidth())

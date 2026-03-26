@@ -151,7 +151,7 @@ public class MemberApplicationService implements
     @Override
     public OrganizationMember execute(UUID organizationId, UUID memberId, UUID newRoleId, String currentPin, String newPin, BigDecimal newSalary, String newStatus, String newRoleName) {
         OrganizationMember member = memberRepository.findById(memberId)
-                .orElseThrow(() -> ApiException.notFound("Staff member not found"));
+                .orElseThrow(() -> ApiException.notFound("Empleado no encontrado"));
 
         if (!member.getOrganizationId().equals(organizationId)) {
             throw ApiException.forbidden("No puedes modificar miembros de otra organización");
@@ -206,7 +206,7 @@ public class MemberApplicationService implements
     @Override
     public void execute(UUID organizationId, UUID memberId) {
         OrganizationMember member = memberRepository.findById(memberId)
-                .orElseThrow(() -> ApiException.notFound("Staff member not found"));
+                .orElseThrow(() -> ApiException.notFound("Empleado no encontrado"));
 
         if (!member.getOrganizationId().equals(organizationId)) {
             throw ApiException.forbidden("No puedes modificar miembros de otra organización");
@@ -262,7 +262,7 @@ public class MemberApplicationService implements
 
         // Fetch User details for the token (needed for name, superAdmin, etc.)
         User user = userRepository.findById(member.getUserId())
-                .orElseThrow(() -> ApiException.notFound("User not found"));
+                .orElseThrow(() -> ApiException.notFound("Usuario no encontrado"));
         // Generate a standard JWT token impersonating this user
         String token = jwtProvider.generateToken(
                 user.getId(),
@@ -298,10 +298,10 @@ public class MemberApplicationService implements
     @Transactional(readOnly = true)
     public OrganizationMember getMember(UUID organizationId, UUID memberId) {
         OrganizationMember member = memberRepository.findById(memberId)
-                .orElseThrow(() -> ApiException.notFound("Staff member not found"));
+                .orElseThrow(() -> ApiException.notFound("Empleado no encontrado"));
 
         if (!member.getOrganizationId().equals(organizationId)) {
-            throw ApiException.forbidden("No puedes acceder a miembros de otra organización");
+            throw ApiException.forbidden("No tienes permiso para acceder a miembros de otra organización");
         }
 
         return member;

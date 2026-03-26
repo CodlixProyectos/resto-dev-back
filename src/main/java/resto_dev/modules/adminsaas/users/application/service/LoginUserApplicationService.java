@@ -27,14 +27,14 @@ public class LoginUserApplicationService implements LoginUserUseCase {
     @Override
     public AuthResult execute(LoginCommand command) {
         User user = userRepository.findByEmail(command.email())
-                .orElseThrow(() -> ApiException.unauthorized("Invalid email or password"));
+                .orElseThrow(() -> ApiException.unauthorized("Correo o contraseña inválidos"));
 
         if (!passwordEncoder.matches(command.password(), user.getPasswordHash())) {
-            throw ApiException.unauthorized("Invalid email or password");
+            throw ApiException.unauthorized("Correo o contraseña inválidos");
         }
 
         if (!user.isActive()) {
-            throw ApiException.forbidden("Account is disabled");
+            throw ApiException.forbidden("La cuenta está desactivada");
         }
 
         String token = jwtProvider.generateToken(

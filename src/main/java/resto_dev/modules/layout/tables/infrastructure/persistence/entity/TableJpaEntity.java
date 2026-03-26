@@ -27,14 +27,14 @@ public class TableJpaEntity extends BaseEntity {
     private String tableNumber;
 
     @Column(nullable = false)
-    private int capacity;
+    private Integer capacity;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TableStatus status;
 
     @Column(name = "active", nullable = false)
-    private boolean active;
+    private Boolean active;
 
     @Column(name = "pos_x")
     private Double posX;

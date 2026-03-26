@@ -24,7 +24,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/public/organizations/{organizationId}")
 @RequiredArgsConstructor
-@Tag(name = "Public Menu", description = "Endpoints públicos sin JWT orientados a Clientes escaneando menús QR en Mesa")
+@Tag(name = "Menú Público", description = "Endpoints públicos sin JWT orientados a Clientes escaneando menús QR en Mesa")
 public class PublicMenuController {
 
     private final PublicMenuApplicationService publicMenuService;

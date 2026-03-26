@@ -21,6 +21,6 @@ public class GetUserProfileApplicationService {
 
     public User execute(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> ApiException.notFound("User not found"));
+                .orElseThrow(() -> ApiException.notFound("Usuario no encontrado"));
     }
 }
