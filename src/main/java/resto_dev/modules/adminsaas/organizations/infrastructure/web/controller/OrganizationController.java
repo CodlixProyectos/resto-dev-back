@@ -121,7 +121,11 @@ public class OrganizationController {
                                 request.email(),
                                 request.phone(),
                                 request.address(),
-                                request.logoUrl());
+                                request.logoUrl(),
+                                request.sunatUser(),
+                                request.sunatPassword(),
+                                request.sunatClientId(),
+                                request.sunatClientSecret());
 
                 Organization updated = updateOrganizationUseCase.execute(id, command);
                 return ResponseEntity.ok(ApiResponse.ok(webMapper.toResponse(updated), "Organization updated"));

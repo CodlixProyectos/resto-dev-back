@@ -29,6 +29,10 @@ public class Organization {
     private String phone;
     private String address;
     private String logoUrl;
+    private String sunatUser;
+    private String sunatPassword;
+    private String sunatClientId;
+    private String sunatClientSecret;
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

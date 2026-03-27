@@ -37,6 +37,10 @@ public class OrganizationWebMapper {
                 o.getEmail(),
                 o.getPhone(),
                 o.getAddress(),
-                o.getLogoUrl());
+                o.getLogoUrl(),
+                o.getSunatUser(),
+                o.getSunatPassword(),
+                o.getSunatClientId(),
+                o.getSunatClientSecret());
     }
 }

@@ -18,4 +18,6 @@ public interface AnalyticsRepositoryPort {
     List<RecentActivity> getRecentActivity(UUID organizationId, DateRange dateRange, int limit, int offset);
 
     List<CategorySales> getSalesByCategory(UUID organizationId, DateRange dateRange);
+
+    List<resto_dev.modules.analytics.domain.model.DailyRevenue> getRevenueHistory(UUID organizationId, DateRange dateRange);
 }

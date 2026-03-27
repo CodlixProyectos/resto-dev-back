@@ -7,10 +7,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.analytics.application.port.input.GetRecentActivityUseCase;
+import resto_dev.modules.analytics.application.port.input.GetRevenueHistoryUseCase;
 import resto_dev.modules.analytics.application.port.input.GetSalesByCategoryUseCase;
 import resto_dev.modules.analytics.application.port.input.GetSalesSummaryUseCase;
 import resto_dev.modules.analytics.application.port.input.GetTopProductsUseCase;
 import resto_dev.modules.analytics.domain.model.CategorySales;
+import resto_dev.modules.analytics.domain.model.DailyRevenue;
 import resto_dev.modules.analytics.domain.model.RecentActivity;
 import resto_dev.modules.analytics.domain.model.SalesSummary;
 import resto_dev.modules.analytics.domain.model.TopSellingProduct;
@@ -31,6 +33,7 @@ public class AnalyticsController {
     private final GetTopProductsUseCase getTopProductsUseCase;
     private final GetRecentActivityUseCase getRecentActivityUseCase;
     private final GetSalesByCategoryUseCase getSalesByCategoryUseCase;
+    private final GetRevenueHistoryUseCase getRevenueHistoryUseCase;
 
     @GetMapping("/sales-summary")
     @Operation(summary = "Get sales summary", description = "Returns total revenue, order count, and other KPIs for a date range")
@@ -82,6 +85,18 @@ public class AnalyticsController {
         DateRange dateRange = toDateRange(startDate, endDate);
         List<CategorySales> sales = getSalesByCategoryUseCase.execute(orgId, dateRange);
         return ResponseEntity.ok(sales);
+    }
+
+    @GetMapping("/revenue-history")
+    @Operation(summary = "Get daily revenue history", description = "Returns revenue grouped by day for charts")
+    public ResponseEntity<List<DailyRevenue>> getRevenueHistory(
+            @RequestHeader("X-Organization-Id") UUID orgId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime endDate) {
+
+        DateRange dateRange = toDateRange(startDate, endDate);
+        List<DailyRevenue> history = getRevenueHistoryUseCase.getRevenueHistory(orgId, dateRange);
+        return ResponseEntity.ok(history);
     }
 
     private DateRange toDateRange(OffsetDateTime start, OffsetDateTime end) {

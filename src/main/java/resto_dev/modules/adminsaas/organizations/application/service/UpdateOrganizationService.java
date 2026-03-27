@@ -29,6 +29,10 @@ public class UpdateOrganizationService implements UpdateOrganizationUseCase {
         org.setPhone(command.phone());
         org.setAddress(command.address());
         org.setLogoUrl(command.logoUrl());
+        org.setSunatUser(command.sunatUser());
+        org.setSunatPassword(command.sunatPassword());
+        org.setSunatClientId(command.sunatClientId());
+        org.setSunatClientSecret(command.sunatClientSecret());
 
         return organizationRepository.save(org);
     }

@@ -10,6 +10,7 @@ import resto_dev.modules.analytics.domain.model.CategorySales;
 import resto_dev.modules.analytics.domain.model.RecentActivity;
 import resto_dev.modules.analytics.domain.model.SalesSummary;
 import resto_dev.modules.analytics.domain.model.TopSellingProduct;
+import resto_dev.modules.analytics.domain.model.DailyRevenue;
 import resto_dev.shared.model.DateRange;
 
 import java.time.LocalDateTime;
@@ -191,5 +192,29 @@ public class AnalyticsRepositoryAdapter implements AnalyticsRepositoryPort {
     }
 
     return results;
+  }
+
+  @Override
+  public List<DailyRevenue> getRevenueHistory(UUID organizationId, DateRange dateRange) {
+    setTenantSchema(organizationId);
+    LocalDateTime start = dateRange.getStartDate();
+    LocalDateTime end = dateRange.getEndDate();
+
+    String sql = """
+        SELECT
+            CAST(created_at AS DATE) as revenue_date,
+            SUM(total) as daily_revenue
+        FROM restaurant_order
+        WHERE status = 'PAID'
+          AND created_at >= ?
+          AND created_at <= ?
+        GROUP BY CAST(created_at AS DATE)
+        ORDER BY CAST(created_at AS DATE) ASC
+        """;
+
+    return jdbcTemplate.query(sql, (rs, rowNum) -> new DailyRevenue(
+        rs.getDate("revenue_date").toLocalDate(),
+        rs.getBigDecimal("daily_revenue")
+    ), start, end);
   }
 }

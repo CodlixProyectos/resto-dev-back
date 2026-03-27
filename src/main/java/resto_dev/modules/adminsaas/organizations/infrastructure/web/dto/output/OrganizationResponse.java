@@ -18,5 +18,9 @@ public record OrganizationResponse(
                 String email,
                 String phone,
                 String address,
-                String logoUrl) {
+                String logoUrl,
+                String sunatUser,
+                String sunatPassword,
+                String sunatClientId,
+                String sunatClientSecret) {
 }

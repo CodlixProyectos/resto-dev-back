@@ -41,6 +41,18 @@ public class OrganizationJpaEntity extends BaseEntity {
     @Column(name = "business_id", length = 50)
     private String businessId;
 
+    @Column(name = "sunat_user", length = 100)
+    private String sunatUser;
+
+    @Column(name = "sunat_password")
+    private String sunatPassword;
+    
+    @Column(name = "sunat_client_id", length = 100)
+    private String sunatClientId;
+
+    @Column(name = "sunat_client_secret")
+    private String sunatClientSecret;
+
     @Column(name = "email")
     private String email;
 

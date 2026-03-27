@@ -5,9 +5,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.analytics.application.port.input.GetSalesSummaryUseCase;
 import resto_dev.modules.analytics.application.port.input.GetTopProductsUseCase;
+import resto_dev.modules.analytics.application.port.input.GetRevenueHistoryUseCase;
 import resto_dev.modules.analytics.application.port.output.AnalyticsRepositoryPort;
 import resto_dev.modules.analytics.domain.model.SalesSummary;
 import resto_dev.modules.analytics.domain.model.TopSellingProduct;
+import resto_dev.modules.analytics.domain.model.DailyRevenue;
 import resto_dev.shared.model.DateRange;
 
 import java.time.LocalDateTime;
@@ -17,7 +19,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AnalyticsApplicationService implements GetSalesSummaryUseCase, GetTopProductsUseCase {
+public class AnalyticsApplicationService implements GetSalesSummaryUseCase, GetTopProductsUseCase, GetRevenueHistoryUseCase {
 
     private final AnalyticsRepositoryPort repositoryPort;
 
@@ -41,5 +43,16 @@ public class AnalyticsApplicationService implements GetSalesSummaryUseCase, GetT
             );
         }
         return repositoryPort.getTopSellingProducts(organizationId, dateRange, limit, offset);
+    }
+
+    @Override
+    public List<DailyRevenue> getRevenueHistory(UUID organizationId, DateRange dateRange) {
+        if (dateRange == null || dateRange.getStartDate() == null) {
+            dateRange = DateRange.of(
+                LocalDateTime.now().minusDays(6).withHour(0).withMinute(0).withSecond(0),
+                LocalDateTime.now()
+            );
+        }
+        return repositoryPort.getRevenueHistory(organizationId, dateRange);
     }
 }

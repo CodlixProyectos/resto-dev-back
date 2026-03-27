@@ -91,9 +91,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-                "http://localhost:3000", 
+                "http://localhost:3000",
                 "http://localhost:4200",
+                "http://localhost:56427",
                 "https://resto-dev.netlify.app",
+                "https://codlyp.website",
+                "https://app.codlyp.website",
                 "http://app.167.86.80.167.sslip.io"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

@@ -10,6 +10,10 @@ public record UpdateOrganizationRequest(
         @Size(max = 255) String email,
         @Size(max = 50) String phone,
         String address,
-        String logoUrl
+        String logoUrl,
+        @Size(max = 100) String sunatUser,
+        String sunatPassword,
+        @Size(max = 100) String sunatClientId,
+        @Size(max = 255) String sunatClientSecret
 ) {
 }

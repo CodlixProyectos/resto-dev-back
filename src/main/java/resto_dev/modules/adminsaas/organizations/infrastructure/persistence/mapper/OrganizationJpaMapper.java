@@ -23,6 +23,10 @@ public class OrganizationJpaMapper {
                 .phone(entity.getPhone())
                 .address(entity.getAddress())
                 .logoUrl(entity.getLogoUrl())
+                .sunatUser(entity.getSunatUser())
+                .sunatPassword(entity.getSunatPassword())
+                .sunatClientId(entity.getSunatClientId())
+                .sunatClientSecret(entity.getSunatClientSecret())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -42,6 +46,10 @@ public class OrganizationJpaMapper {
                 .phone(org.getPhone())
                 .address(org.getAddress())
                 .logoUrl(org.getLogoUrl())
+                .sunatUser(org.getSunatUser())
+                .sunatPassword(org.getSunatPassword())
+                .sunatClientId(org.getSunatClientId())
+                .sunatClientSecret(org.getSunatClientSecret())
                 .build();
 
         if (org.getId() != null) {
