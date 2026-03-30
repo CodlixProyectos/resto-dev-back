@@ -2,6 +2,8 @@ package resto_dev.modules.inventory.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.InventoryItemJpaEntity;
@@ -69,12 +71,8 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<MovementDetailedDto> getMovementHistory() {
-        // Obtenemos los últimos 100 movimientos ordenados por fecha de creación desc
-        return movementRepository.findAll().stream()
-                // Idealmente usaríamos Pageable y un Query en Repository, pero esto es funcional para Phase28
-                .sorted((a, b) -> b.getDate().compareTo(a.getDate()))
-                .limit(100)
+    public Page<MovementDetailedDto> getMovementHistory(Pageable pageable) {
+        return movementRepository.findAll(pageable)
                 .map(mov -> {
                     String itemName = itemRepository.findById(mov.getItemId())
                             .map(InventoryItemJpaEntity::getName)
@@ -96,7 +94,7 @@ public class InventoryService {
                             mov.getReason(),
                             supplierName
                     );
-                }).toList();
+                });
     }
 
     public record MovementDetailedDto(

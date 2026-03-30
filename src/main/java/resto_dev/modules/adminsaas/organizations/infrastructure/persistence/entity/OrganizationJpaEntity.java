@@ -3,6 +3,7 @@ package resto_dev.modules.adminsaas.organizations.infrastructure.persistence.ent
 import jakarta.persistence.*;
 import lombok.*;
 import resto_dev.shared.common.BaseEntity;
+import resto_dev.shared.security.AttributeEncryptionConverter;
 
 import java.util.UUID;
 
@@ -45,12 +46,14 @@ public class OrganizationJpaEntity extends BaseEntity {
     private String sunatUser;
 
     @Column(name = "sunat_password")
+    @Convert(converter = AttributeEncryptionConverter.class)
     private String sunatPassword;
     
     @Column(name = "sunat_client_id", length = 100)
     private String sunatClientId;
 
     @Column(name = "sunat_client_secret")
+    @Convert(converter = AttributeEncryptionConverter.class)
     private String sunatClientSecret;
 
     @Column(name = "email")

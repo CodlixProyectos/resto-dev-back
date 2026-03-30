@@ -3,12 +3,17 @@ package resto_dev.modules.inventory.infrastructure.web.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.inventory.application.service.InventoryService;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.InventoryItemJpaEntity;
 import resto_dev.modules.inventory.infrastructure.persistence.repository.InventoryItemJpaRepository;
 import resto_dev.shared.responses.ApiResponse;
+import resto_dev.shared.responses.PaginatedResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,9 +30,22 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @GetMapping("/items")
-    @Operation(summary = "Obtener lista de insumos")
-    public ResponseEntity<ApiResponse<List<InventoryItemJpaEntity>>> getItems() {
-        return ResponseEntity.ok(ApiResponse.ok(itemRepository.findAllByActiveTrue()));
+    @Operation(summary = "Obtener lista de insumos con paginación y búsqueda")
+    public ResponseEntity<ApiResponse<PaginatedResponse<InventoryItemJpaEntity>>> getItems(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name").ascending());
+        Page<InventoryItemJpaEntity> result;
+        
+        if (search != null && !search.trim().isEmpty()) {
+            result = itemRepository.findAllByActiveTrueAndNameContainingIgnoreCase(search, pageable);
+        } else {
+            result = itemRepository.findAllByActiveTrue(pageable);
+        }
+        
+        return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(result)));
     }
 
     @PostMapping("/items")
@@ -46,9 +64,13 @@ public class InventoryController {
     }
 
     @GetMapping("/movements")
-    @Operation(summary = "Obtener historial de movimientos (Kardex)")
-    public ResponseEntity<ApiResponse<List<InventoryService.MovementDetailedDto>>> getMovementHistory() {
-        return ResponseEntity.ok(ApiResponse.ok(inventoryService.getMovementHistory()));
+    @Operation(summary = "Obtener historial de movimientos (Kardex) con paginación")
+    public ResponseEntity<ApiResponse<PaginatedResponse<InventoryService.MovementDetailedDto>>> getMovementHistory(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("date").descending());
+        return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(inventoryService.getMovementHistory(pageable))));
     }
 
     @PostMapping("/movements")

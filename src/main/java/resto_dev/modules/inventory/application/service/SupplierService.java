@@ -2,6 +2,8 @@ package resto_dev.modules.inventory.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.SupplierJpaEntity;
@@ -19,7 +21,15 @@ public class SupplierService {
     private final SupplierJpaRepository supplierRepository;
 
     @Transactional(readOnly = true)
-    public List<SupplierJpaEntity> getAllActive() {
+    public Page<SupplierJpaEntity> getAllActive(Pageable pageable, String search) {
+        if (search != null && !search.trim().isEmpty()) {
+            return supplierRepository.findAllByActiveTrueAndNameContainingIgnoreCase(search, pageable);
+        }
+        return supplierRepository.findAllByActiveTrue(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SupplierJpaEntity> getAllActiveList() {
         return supplierRepository.findAllByActiveTrue();
     }
 

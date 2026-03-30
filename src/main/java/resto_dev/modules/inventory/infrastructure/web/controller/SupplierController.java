@@ -2,12 +2,16 @@ package resto_dev.modules.inventory.infrastructure.web.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.inventory.application.service.SupplierService;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.SupplierJpaEntity;
 import resto_dev.shared.responses.ApiResponse;
+import resto_dev.shared.responses.PaginatedResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,9 +25,14 @@ public class SupplierController {
     private final SupplierService supplierService;
 
     @GetMapping
-    @Operation(summary = "Obtener todos los proveedores activos")
-    public ResponseEntity<ApiResponse<List<SupplierJpaEntity>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.ok(supplierService.getAllActive()));
+    @Operation(summary = "Obtener proveedores activos con paginación y búsqueda")
+    public ResponseEntity<ApiResponse<PaginatedResponse<SupplierJpaEntity>>> getAll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search
+    ) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name").ascending());
+        return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(supplierService.getAllActive(pageable, search))));
     }
 
     @GetMapping("/{id}")
