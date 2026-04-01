@@ -6,9 +6,9 @@ spring:
 
   # ── Datasource ──
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/resto_dev
+    username: postgres
+    password: alfredoguzman2
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
