@@ -1,4 +1,4 @@
-CREATE TABLE pensioners (
+CREATE TABLE IF NOT EXISTS pensioners (
     id UUID PRIMARY KEY,
     organization_id UUID NOT NULL,
     full_name VARCHAR(255) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE pensioners (
     deleted_at TIMESTAMP WITHOUT TIME ZONE
 );
 
-CREATE TABLE pensioner_consumptions (
+CREATE TABLE IF NOT EXISTS pensioner_consumptions (
     id UUID PRIMARY KEY,
     pensioner_id UUID NOT NULL REFERENCES pensioners(id) ON DELETE CASCADE,
     organization_id UUID NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE pensioner_consumptions (
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE pensioner_payments (
+CREATE TABLE IF NOT EXISTS pensioner_payments (
     id UUID PRIMARY KEY,
     pensioner_id UUID NOT NULL REFERENCES pensioners(id) ON DELETE CASCADE,
     organization_id UUID NOT NULL,

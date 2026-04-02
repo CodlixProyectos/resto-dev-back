@@ -11,6 +11,8 @@ public record UpdateOrganizationRequest(
         @Size(max = 50) String phone,
         String address,
         String logoUrl,
+        String primaryColor,
+        String secondaryColor,
         @Size(max = 100) String sunatUser,
         String sunatPassword,
         @Size(max = 100) String sunatClientId,

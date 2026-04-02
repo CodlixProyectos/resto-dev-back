@@ -9,7 +9,9 @@ import resto_dev.modules.layout.tables.application.port.input.CreateTableUseCase
 import resto_dev.modules.layout.tables.application.port.input.DeleteTableUseCase;
 import resto_dev.modules.layout.tables.application.port.input.ListTablesUseCase;
 import resto_dev.modules.layout.tables.application.port.input.UpdateTableUseCase;
+import resto_dev.modules.layout.tables.application.port.output.TableEventPublisherPort;
 import resto_dev.modules.layout.tables.application.port.output.TableRepositoryPort;
+import resto_dev.shared.tenancy.TenantContext;
 import resto_dev.modules.layout.tables.application.query.SearchTablesQuery;
 import resto_dev.modules.layout.tables.domain.model.Table;
 import resto_dev.modules.layout.tables.domain.model.TableStatus;
@@ -35,6 +37,7 @@ public class TableApplicationService implements
 
     private final TableRepositoryPort tableRepository;
     private final ZoneRepositoryPort zoneRepository;
+    private final TableEventPublisherPort tableEventPublisher;
 
     @Override
     public Table execute(CreateTableCommand command) {
@@ -71,7 +74,9 @@ public class TableApplicationService implements
                 .shape(command.shape())
                 .build();
 
-        return tableRepository.save(newTable);
+        Table savedTable = tableRepository.save(newTable);
+        tableEventPublisher.publishTableEvent(TenantContext.getCurrentOrganizationId(), savedTable, "TABLE_CREATED");
+        return savedTable;
     }
 
     @Override
@@ -152,14 +157,16 @@ public class TableApplicationService implements
         table.setRotation(command.rotation());
         table.setShape(command.shape());
 
-        return tableRepository.save(table);
+        Table savedTable = tableRepository.save(table);
+        tableEventPublisher.publishTableEvent(TenantContext.getCurrentOrganizationId(), savedTable, "TABLE_UPDATED");
+        return savedTable;
     }
 
     @Override
     public void execute(UUID id) {
-        if (tableRepository.findById(id).isEmpty()) {
-            throw new ResourceNotFoundException("Mesa", id);
-        }
+        Table table = tableRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Mesa", id));
         tableRepository.deleteById(id);
+        tableEventPublisher.publishTableEvent(TenantContext.getCurrentOrganizationId(), table, "TABLE_DELETED");
     }
 }

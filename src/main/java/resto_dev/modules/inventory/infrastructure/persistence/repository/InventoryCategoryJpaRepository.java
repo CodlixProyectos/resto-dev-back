@@ -12,4 +12,5 @@ import java.util.UUID;
 public interface InventoryCategoryJpaRepository extends JpaRepository<InventoryCategoryJpaEntity, UUID> {
     Page<InventoryCategoryJpaEntity> findAll(Pageable pageable);
     Page<InventoryCategoryJpaEntity> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
+    Page<InventoryCategoryJpaEntity> findAllByActiveTrue(Pageable pageable);
 }

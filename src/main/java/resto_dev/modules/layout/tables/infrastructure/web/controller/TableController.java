@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import jakarta.servlet.http.HttpServletRequest;
+import resto_dev.shared.security.sse.SseTicketService;
+import resto_dev.modules.layout.tables.infrastructure.web.sse.SseTableEventPublisher;
 import resto_dev.modules.layout.tables.application.service.TablePdfService;
 import resto_dev.modules.layout.tables.application.command.CreateTableCommand;
 import resto_dev.modules.layout.tables.application.command.UpdateTableCommand;
@@ -55,6 +58,8 @@ public class TableController {
         private final TablePdfService pdfService;
         private final OrganizationRepositoryPort organizationRepository;
         private final ZoneRepositoryPort zoneRepository;
+        private final SseTableEventPublisher sseTableEventPublisher;
+        private final SseTicketService sseTicketService;
 
         @PostMapping("/create")
         // @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_LAYOUT')")
@@ -215,5 +220,31 @@ public class TableController {
                                 .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
                                 .contentType(MediaType.APPLICATION_PDF)
                                 .body(pdfContent);
+        }
+
+        @PostMapping("/events/ticket")
+        @Operation(summary = "Generar Ticket SSE para Mesas", description = "Genera un ticket de un solo uso para sincronización en tiempo real.")
+        public ResponseEntity<ApiResponse<UUID>> generateSseTicket(
+                        @RequestHeader("X-Organization-Id") UUID orgId,
+                        @org.springframework.security.core.annotation.AuthenticationPrincipal UUID userId) {
+                UUID ticket = sseTicketService.generateTicket(userId, orgId);
+                return ResponseEntity.ok(ApiResponse.ok(ticket, "Ticket generado exitosamente"));
+        }
+
+        @GetMapping(value = "/events/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        @Operation(summary = "Stream de Eventos de Mesas", description = "Conexión SSE para recibir cambios de estado de mesas en tiempo real.")
+        public SseEmitter streamTableEvents(
+                        @RequestParam(value = "organizationId", required = false) UUID orgIdParam,
+                        @RequestHeader(value = "X-Organization-Id", required = false) UUID orgIdHeader) {
+                
+                UUID orgId = orgIdParam != null ? orgIdParam : (orgIdHeader != null ? orgIdHeader : resto_dev.shared.tenancy.TenantContext.getCurrentOrganizationId());
+                
+                if (orgId == null) {
+                        SseEmitter emitter = new SseEmitter();
+                        emitter.completeWithError(new RuntimeException("Organization ID required"));
+                        return emitter;
+                }
+                
+                return sseTableEventPublisher.subscribe(orgId);
         }
 }

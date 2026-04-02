@@ -34,6 +34,10 @@ public class InventoryCategoryJpaEntity {
     @Builder.Default
     private String color = "#10B981";
 
+    @Column(name = "active", nullable = false)
+    @Builder.Default
+    private Boolean active = true;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

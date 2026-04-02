@@ -25,6 +25,8 @@ public class InventoryService {
     private final InventoryItemJpaRepository itemRepository;
     private final StockMovementJpaRepository movementRepository;
     private final SupplierJpaRepository supplierRepository;
+    private final resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher;
+    private final resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper;
 
     @Transactional
     public void recordMovement(UUID itemId, String type, BigDecimal quantity, String reason, BigDecimal unitPrice, UUID supplierId) {
@@ -58,8 +60,17 @@ public class InventoryService {
             item.setCostPrice(unitPrice);
         }
 
-        itemRepository.save(item);
+        InventoryItemJpaEntity savedItem = itemRepository.save(item);
         log.info("Stock movement recorded for {}: {} {}", item.getName(), change, item.getUnit());
+
+        // Notify Admin if stock is low
+        if (savedItem.getCurrentStock().compareTo(savedItem.getMinStock()) <= 0) {
+            adminEventPublisher.notifyAdmin(
+                resto_dev.shared.tenancy.TenantContext.getCurrentOrganizationId(),
+                adminNotificationMapper.fromInventoryItem(savedItem),
+                "LOW_STOCK"
+            );
+        }
     }
 
     private BigDecimal getMultiplierForType(String type) {

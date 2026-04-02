@@ -35,7 +35,10 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
 
     @Override
     public Optional<Product> findById(UUID id) {
-        return repository.findById(id).map(mapper::toDomain);
+        return repository.findAll((root, query, cb) -> {
+            root.fetch("category", jakarta.persistence.criteria.JoinType.LEFT);
+            return cb.equal(root.get("id"), id);
+        }).stream().findFirst().map(mapper::toDomain);
     }
 
     @Override
@@ -55,7 +58,14 @@ public class ProductRepositoryAdapter implements ProductRepositoryPort {
             spec = spec.and((root, cq, cb) -> cb.equal(root.get("category").get("id"), query.getCategoryId()));
         }
 
-        Page<ProductJpaEntity> page = repository.findAll(spec, pageable);
+        final Specification<ProductJpaEntity> finalSpec = spec;
+        Page<ProductJpaEntity> page = repository.findAll((root, cq, cb) -> {
+            // Only fetch join if not a count query
+            if (cq.getResultType() != Long.class && cq.getResultType() != long.class) {
+                root.fetch("category", jakarta.persistence.criteria.JoinType.LEFT);
+            }
+            return finalSpec.toPredicate(root, cq, cb);
+        }, pageable);
 
         var content = page.getContent().stream().map(mapper::toDomain).collect(Collectors.toList());
 

@@ -68,6 +68,12 @@ public class OrganizationJpaEntity extends BaseEntity {
     @Column(name = "logo_url", columnDefinition = "TEXT")
     private String logoUrl;
 
+    @Column(name = "primary_color", length = 20)
+    private String primaryColor;
+
+    @Column(name = "secondary_color", length = 20)
+    private String secondaryColor;
+
     @Builder.Default
     @Column(name = "active", nullable = false)
     private boolean active = true;

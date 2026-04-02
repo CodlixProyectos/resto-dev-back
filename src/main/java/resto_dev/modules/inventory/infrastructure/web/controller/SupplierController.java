@@ -13,6 +13,8 @@ import resto_dev.modules.inventory.infrastructure.persistence.entity.SupplierJpa
 import resto_dev.shared.responses.ApiResponse;
 import resto_dev.shared.responses.PaginatedResponse;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.List;
 import java.util.UUID;
 

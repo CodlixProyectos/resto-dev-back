@@ -51,7 +51,11 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/api/v1/organizations/*/auth/pin",
                                 "/api/v1/organizations/auth/pin",
-                                "/api/v1/tables/download-pdf"
+                                "/api/v1/tables/download-pdf",
+                                "/api/v1/tables/events/stream",
+                                "/api/v1/orders/admin/stream",
+                                "/api/v1/orders/waiter/stream",
+                                "/api/v1/notifications/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/health/**").permitAll()
                         .requestMatchers("/api/v1/public/**").permitAll()

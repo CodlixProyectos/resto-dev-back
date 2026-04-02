@@ -38,6 +38,8 @@ public class OrganizationWebMapper {
                 o.getPhone(),
                 o.getAddress(),
                 o.getLogoUrl(),
+                o.getPrimaryColor(),
+                o.getSecondaryColor(),
                 o.getSunatUser(),
                 o.getSunatPassword(),
                 o.getSunatClientId(),

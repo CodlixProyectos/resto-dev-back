@@ -3,6 +3,7 @@ package resto_dev.modules.sales.orders.application.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.layout.tables.application.port.output.TableRepositoryPort;
+import resto_dev.modules.layout.tables.application.port.output.TableEventPublisherPort;
 import resto_dev.modules.layout.tables.domain.model.TableStatus;
 import resto_dev.modules.menu.products.application.port.output.ProductRepositoryPort;
 import resto_dev.modules.menu.products.domain.model.Product;
@@ -43,18 +44,27 @@ public class OrderApplicationService implements
     private final ProductRepositoryPort productRepository;
     private final KitchenEventPublisherPort kitchenEventPublisher;
     private final resto_dev.modules.sales.orders.application.port.output.WaiterEventPublisherPort waiterEventPublisher;
+    private final TableEventPublisherPort tableEventPublisher;
+    private final resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher;
+    private final resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper;
 
     public OrderApplicationService(
             OrderRepositoryPort orderRepository,
             TableRepositoryPort tableRepository,
             ProductRepositoryPort productRepository,
             KitchenEventPublisherPort kitchenEventPublisher,
-            resto_dev.modules.sales.orders.application.port.output.WaiterEventPublisherPort waiterEventPublisher) {
+            resto_dev.modules.sales.orders.application.port.output.WaiterEventPublisherPort waiterEventPublisher,
+            TableEventPublisherPort tableEventPublisher,
+            resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher,
+            resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper) {
         this.orderRepository = orderRepository;
         this.tableRepository = tableRepository;
         this.productRepository = productRepository;
         this.kitchenEventPublisher = kitchenEventPublisher;
         this.waiterEventPublisher = waiterEventPublisher;
+        this.tableEventPublisher = tableEventPublisher;
+        this.adminEventPublisher = adminEventPublisher;
+        this.adminNotificationMapper = adminNotificationMapper;
     }
 
     @Override
@@ -116,10 +126,18 @@ public class OrderApplicationService implements
             tableRepository.findById(savedOrder.getTableId()).ifPresent(table -> {
                 table.setStatus(TableStatus.OCCUPIED);
                 tableRepository.save(table);
+                tableEventPublisher.publishTableEvent(TenantContext.getCurrentOrganizationId(), table, "TABLE_UPDATED");
             });
         }
 
         kitchenEventPublisher.publishOrderEvent(TenantContext.getCurrentOrganizationId(), savedOrder, "ORDER_CREATED");
+
+        // Notify Admin
+        adminEventPublisher.notifyAdmin(
+                TenantContext.getCurrentOrganizationId(),
+                adminNotificationMapper.fromOrder(savedOrder, "ORDER_CREATED"),
+                "ORDER_CREATED"
+        );
 
         return savedOrder;
     }
@@ -222,11 +240,19 @@ public class OrderApplicationService implements
                 tableRepository.findById(savedOrder.getTableId()).ifPresent(table -> {
                     table.setStatus(TableStatus.FREE);
                     tableRepository.save(table);
+                    tableEventPublisher.publishTableEvent(TenantContext.getCurrentOrganizationId(), table, "TABLE_UPDATED");
                 });
             }
         }
         if (newStatus != OrderStatus.PAID) {
             kitchenEventPublisher.publishOrderEvent(TenantContext.getCurrentOrganizationId(), savedOrder, "ORDER_UPDATED");
+        } else {
+            // Notify Admin of Payment
+            adminEventPublisher.notifyAdmin(
+                    TenantContext.getCurrentOrganizationId(),
+                    adminNotificationMapper.fromOrder(savedOrder, "ORDER_PAID"),
+                    "ORDER_PAID"
+            );
         }
 
         if (savedOrder.getStatus() == OrderStatus.READY_TO_SERVE && savedOrder.getWaiterId() != null) {

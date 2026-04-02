@@ -21,6 +21,8 @@ public class ReservationService {
 
     private final ReservationJpaRepository repository;
     private final TableJpaRepository tableRepository;
+    private final resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher;
+    private final resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper;
 
     @Transactional(readOnly = true)
     public List<Reservation> getAllReservations() {
@@ -54,15 +56,24 @@ public class ReservationService {
     @Transactional
     public Reservation createReservation(Reservation reservation) {
         // Si tiene mesa asignada, podríamos ponerla en RESERVED de una vez si es para hoy
-        if (reservation.getTable() != null && reservation.getReservationDate().equals(LocalDate.now())) {
+        if (reservation.getTable() != null && reservation.getReservationDate().equals(java.time.LocalDate.now())) {
             tableRepository.findById(reservation.getTable().getId()).ifPresent(table -> {
-                if (table.getStatus() == TableStatus.FREE) {
-                    table.setStatus(TableStatus.RESERVED);
+                if (table.getStatus() == resto_dev.modules.layout.tables.domain.model.TableStatus.FREE) {
+                    table.setStatus(resto_dev.modules.layout.tables.domain.model.TableStatus.RESERVED);
                     tableRepository.save(table);
                 }
             });
         }
-        return repository.save(reservation);
+        Reservation savedReservation = repository.save(reservation);
+
+        // Notify Admin of new reservation
+        adminEventPublisher.notifyAdmin(
+            resto_dev.shared.tenancy.TenantContext.getCurrentOrganizationId(),
+            adminNotificationMapper.fromReservation(savedReservation),
+            "RESERVATION_CREATED"
+        );
+
+        return savedReservation;
     }
 
     @Transactional

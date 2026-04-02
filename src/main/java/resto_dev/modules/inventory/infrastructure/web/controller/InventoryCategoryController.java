@@ -13,6 +13,8 @@ import resto_dev.modules.inventory.infrastructure.persistence.repository.Invento
 import resto_dev.shared.responses.ApiResponse;
 import resto_dev.shared.responses.PaginatedResponse;
 
+import lombok.RequiredArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.List;
 

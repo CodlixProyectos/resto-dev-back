@@ -16,6 +16,7 @@ public class ProductJpaMapper {
         return Product.builder()
                 .id(entity.getId())
                 .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
+                .categoryName(entity.getCategory() != null ? entity.getCategory().getName() : null)
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .price(entity.getPrice())

@@ -122,6 +122,8 @@ public class OrganizationController {
                                 request.phone(),
                                 request.address(),
                                 request.logoUrl(),
+                                request.primaryColor(),
+                                request.secondaryColor(),
                                 request.sunatUser(),
                                 request.sunatPassword(),
                                 request.sunatClientId(),

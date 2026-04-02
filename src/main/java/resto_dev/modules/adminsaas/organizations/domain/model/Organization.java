@@ -33,6 +33,8 @@ public class Organization {
     private String sunatPassword;
     private String sunatClientId;
     private String sunatClientSecret;
+    private String primaryColor;
+    private String secondaryColor;
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

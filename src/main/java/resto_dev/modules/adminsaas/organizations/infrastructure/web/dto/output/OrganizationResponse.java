@@ -19,6 +19,8 @@ public record OrganizationResponse(
                 String phone,
                 String address,
                 String logoUrl,
+                String primaryColor,
+                String secondaryColor,
                 String sunatUser,
                 String sunatPassword,
                 String sunatClientId,

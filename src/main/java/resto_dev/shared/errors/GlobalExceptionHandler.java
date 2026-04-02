@@ -78,4 +78,10 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Internal server error: " + ex.getMessage()));
     }
+
+    @ExceptionHandler(org.springframework.web.context.request.async.AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsable(org.springframework.web.context.request.async.AsyncRequestNotUsableException ex) {
+        // Silently ignore or log at debug level. This happens when SSE clients disconnect (e.g. page refresh).
+        log.debug("SSE client disconnected: {}", ex.getMessage());
+    }
 }

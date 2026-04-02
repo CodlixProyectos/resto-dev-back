@@ -42,6 +42,7 @@ public class ProductWebMapper {
                 product.getDescription(),
                 product.getPrice(),
                 product.getCategoryId(),
+                product.getCategoryName(),
                 product.isActive(),
                 product.getImageUrl());
     }

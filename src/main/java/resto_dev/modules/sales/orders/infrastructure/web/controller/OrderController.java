@@ -48,6 +48,7 @@ public class OrderController {
     private final OrderWebMapper webMapper;
     private final resto_dev.modules.sales.orders.infrastructure.web.sse.SseKitchenEventPublisher sseKitchenEventPublisher;
     private final resto_dev.modules.sales.orders.infrastructure.web.sse.SseWaiterEventPublisher sseWaiterEventPublisher;
+    private final resto_dev.modules.sales.orders.infrastructure.web.sse.SseAdminEventPublisher sseAdminEventPublisher;
     private final resto_dev.shared.security.sse.SseTicketService sseTicketService;
     private final GetOrderByIdUseCase getOrderByIdUseCase;
 
@@ -60,6 +61,7 @@ public class OrderController {
             OrderWebMapper webMapper,
             resto_dev.modules.sales.orders.infrastructure.web.sse.SseKitchenEventPublisher sseKitchenEventPublisher,
             resto_dev.modules.sales.orders.infrastructure.web.sse.SseWaiterEventPublisher sseWaiterEventPublisher,
+            resto_dev.modules.sales.orders.infrastructure.web.sse.SseAdminEventPublisher sseAdminEventPublisher,
             resto_dev.shared.security.sse.SseTicketService sseTicketService,
             GetOrderByIdUseCase getOrderByIdUseCase) {
         this.createOrderUseCase = createOrderUseCase;
@@ -70,6 +72,7 @@ public class OrderController {
         this.webMapper = webMapper;
         this.sseKitchenEventPublisher = sseKitchenEventPublisher;
         this.sseWaiterEventPublisher = sseWaiterEventPublisher;
+        this.sseAdminEventPublisher = sseAdminEventPublisher;
         this.sseTicketService = sseTicketService;
         this.getOrderByIdUseCase = getOrderByIdUseCase;
     }
@@ -103,8 +106,24 @@ public class OrderController {
                 HttpStatus.CREATED);
     }
 
+    @GetMapping(value = "/admin/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "Admin Stream (Eventos SSE)", description = "Conexión en tiempo real para notificaciones globales de la organización (pedidos, stock, reservas).")
+    public SseEmitter streamAdminNotifications(
+            @RequestParam(value = "organizationId", required = false) UUID orgIdParam,
+            @RequestHeader(value = "X-Organization-Id", required = false) UUID orgIdHeader) {
+        
+        UUID orgId = orgIdParam != null ? orgIdParam : (orgIdHeader != null ? orgIdHeader : resto_dev.shared.tenancy.TenantContext.getCurrentOrganizationId());
+        
+        if (orgId == null) {
+            SseEmitter emitter = new SseEmitter();
+            emitter.completeWithError(new RuntimeException("Organization ID required"));
+            return emitter;
+        }
+        
+        return sseAdminEventPublisher.subscribe(orgId);
+    }
+
     @GetMapping(value = "/kitchen/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("hasPermission(T(resto_dev.shared.tenancy.TenantContext).getCurrentOrganizationId(), 'Organization', 'VIEW_KITCHEN')")
     @Operation(summary = "KDS Stream (Eventos SSE)", description = "Conexión persistente donde la pantalla de cocina recibe actualizaciones en tiempo real.")
     public SseEmitter streamKitchenOrders(
             @RequestParam(value = "organizationId", required = false) UUID orgIdParam,
