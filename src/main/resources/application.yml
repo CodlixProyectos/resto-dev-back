@@ -44,7 +44,7 @@ app:
     secret: ${JWT_SECRET}
     expiration-ms: 86400000  # 24 horas
   security:
-    encryption-key: ${SUNAT_ENCRYPTION_KEY}
+    encryption-key: ${SUNAT_ENCRYPTION_KEY:codlix_default_encryption_key_32}
 
 # ── Server ──
 server:
