@@ -14,9 +14,13 @@ import resto_dev.modules.inventory.infrastructure.persistence.entity.InventoryIt
 import resto_dev.modules.inventory.infrastructure.persistence.repository.InventoryItemJpaRepository;
 import resto_dev.shared.responses.ApiResponse;
 import resto_dev.shared.responses.PaginatedResponse;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,23 +32,50 @@ public class InventoryController {
 
     private final InventoryItemJpaRepository itemRepository;
     private final InventoryService inventoryService;
+    private final resto_dev.modules.inventory.infrastructure.excel.InventoryExcelParser excelParser;
 
     @GetMapping("/items")
     @Operation(summary = "Obtener lista de insumos con paginación y búsqueda")
     public ResponseEntity<ApiResponse<PaginatedResponse<InventoryItemJpaEntity>>> getItems(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String search
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) String status
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name").ascending());
-        Page<InventoryItemJpaEntity> result;
+        int pageIndex = Math.max(0, page - 1);
+        Pageable pageable = PageRequest.of(pageIndex, size, Sort.by("name").ascending());
         
-        if (search != null && !search.trim().isEmpty()) {
-            result = itemRepository.findAllByActiveTrueAndNameContainingIgnoreCase(search, pageable);
-        } else {
-            result = itemRepository.findAllByActiveTrue(pageable);
-        }
-        
+        Specification<InventoryItemJpaEntity> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.isTrue(root.get("active")));
+
+            if (search != null && !search.trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + search.toLowerCase().trim() + "%"));
+            }
+
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            }
+
+            if (status != null && !status.isEmpty()) {
+                switch (status.toLowerCase()) {
+                    case "in-stock" -> {
+                        predicates.add(cb.greaterThan(root.get("currentStock"), root.get("minStock")));
+                        predicates.add(cb.greaterThan(root.get("currentStock"), BigDecimal.ZERO));
+                    }
+                    case "low-stock" -> {
+                        predicates.add(cb.lessThanOrEqualTo(root.get("currentStock"), root.get("minStock")));
+                        predicates.add(cb.greaterThan(root.get("currentStock"), BigDecimal.ZERO));
+                    }
+                    case "out-of-stock" -> predicates.add(cb.lessThanOrEqualTo(root.get("currentStock"), BigDecimal.ZERO));
+                }
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<InventoryItemJpaEntity> result = itemRepository.findAll(spec, pageable);
         return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(result)));
     }
 
@@ -63,13 +94,37 @@ public class InventoryController {
         return ResponseEntity.ok(ApiResponse.ok(itemRepository.save(item)));
     }
 
+    @PostMapping("/bulk-upload")
+    @Operation(summary = "Cargar insumos masivamente desde un archivo Excel")
+    public ResponseEntity<ApiResponse<String>> bulkUpload(@RequestParam("file") MultipartFile file) {
+        try {
+            var rows = excelParser.parse(file);
+            int processed = inventoryService.bulkUploadItems(rows);
+            return ResponseEntity.ok(ApiResponse.ok("Se han procesado " + processed + " productos correctamente."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Error al procesar el archivo Excel: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/bulk-save")
+    @Operation(summary = "Guardar insumos masivamente desde datos JSON (Previsualización editable)")
+    public ResponseEntity<ApiResponse<String>> bulkSave(@RequestBody List<resto_dev.modules.inventory.infrastructure.excel.InventoryExcelParser.InventoryExcelRow> rows) {
+        try {
+            int processed = inventoryService.bulkUploadItems(rows);
+            return ResponseEntity.ok(ApiResponse.ok("Se han guardado " + processed + " productos correctamente."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Error al guardar los productos: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/movements")
     @Operation(summary = "Obtener historial de movimientos (Kardex) con paginación")
     public ResponseEntity<ApiResponse<PaginatedResponse<InventoryService.MovementDetailedDto>>> getMovementHistory(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("date").descending());
+        int pageIndex = Math.max(0, page - 1);
+        Pageable pageable = PageRequest.of(pageIndex, size, Sort.by("date").descending());
         return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(inventoryService.getMovementHistory(pageable))));
     }
 

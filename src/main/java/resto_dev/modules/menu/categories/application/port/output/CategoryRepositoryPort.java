@@ -15,6 +15,8 @@ public interface CategoryRepositoryPort {
 
     Optional<Category> findById(UUID id);
 
+    Optional<Category> findByName(String name);
+
     PageModel<Category> findAll(ListCategoriesQuery query);
 
     void deleteById(UUID id);

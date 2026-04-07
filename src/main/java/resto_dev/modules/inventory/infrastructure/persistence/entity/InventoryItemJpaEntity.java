@@ -32,6 +32,10 @@ public class InventoryItemJpaEntity {
     @JoinColumn(name = "category_id")
     private InventoryCategoryJpaEntity category;
 
+    @ManyToOne
+    @JoinColumn(name = "preferred_supplier_id")
+    private SupplierJpaEntity preferredSupplier;
+
     @Column(name = "unit", nullable = false, length = 20)
     private String unit;
 

@@ -16,11 +16,17 @@ public class AdminNotificationMapper {
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     public AdminNotificationResponse fromOrder(Order order, String eventType) {
-        String title = "ORDER_CREATED".equals(eventType) ? "Nuevo Pedido" : "Venta Completada";
-        String message = "ORDER_CREATED".equals(eventType) 
-                ? "Mesa " + order.getTableNumber() + " ha realizado un pedido."
+        boolean isCreated = "ORDER_CREATED".equals(eventType);
+        String message = switch (order.getType()) {
+            case TAKEOUT -> isCreated ? "Se ha recibido un nuevo pedido para llevar." : "El pedido para llevar ha sido completado.";
+            case DELIVERY -> isCreated ? "Se ha recibido un nuevo pedido por delivery." : "El pedido de delivery ha sido completado.";
+            default -> isCreated 
+                ? "La Mesa " + order.getTableNumber() + " ha realizado un pedido." 
                 : "La mesa " + order.getTableNumber() + " ha cerrado su cuenta exitosamente.";
-        String type = "ORDER_CREATED".equals(eventType) ? "info" : "success";
+        };
+
+        String title = isCreated ? "Nuevo Pedido" : "Venta Completada";
+        String type = isCreated ? "info" : "success";
 
         return AdminNotificationResponse.builder()
                 .id(UUID.randomUUID().toString())

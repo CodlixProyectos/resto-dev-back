@@ -27,6 +27,12 @@ public class OrganizationJpaMapper {
                 .sunatPassword(entity.getSunatPassword())
                 .sunatClientId(entity.getSunatClientId())
                 .sunatClientSecret(entity.getSunatClientSecret())
+                .hasInventory(entity.isHasInventory())
+                .hasPensioners(entity.isHasPensioners())
+                .hasKds(entity.isHasKds())
+                .invitationCode(entity.getInvitationCode())
+                .yapeQrUrl(entity.getYapeQrUrl())
+                .plinQrUrl(entity.getPlinQrUrl())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -50,6 +56,12 @@ public class OrganizationJpaMapper {
                 .sunatPassword(org.getSunatPassword())
                 .sunatClientId(org.getSunatClientId())
                 .sunatClientSecret(org.getSunatClientSecret())
+                .hasInventory(org.isHasInventory())
+                .hasPensioners(org.isHasPensioners())
+                .hasKds(org.isHasKds())
+                .invitationCode(org.getInvitationCode())
+                .yapeQrUrl(org.getYapeQrUrl())
+                .plinQrUrl(org.getPlinQrUrl())
                 .build();
 
         if (org.getId() != null) {

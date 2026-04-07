@@ -24,7 +24,7 @@ public class RegisterUserApplicationService implements RegisterUserUseCase {
     @Override
     public User execute(RegisterCommand command) {
         if (userRepository.existsByEmail(command.email())) {
-            throw ApiException.conflict("Email already registered: " + command.email());
+            throw ApiException.conflict("El correo electrónico ya se encuentra registrado: " + command.email());
         }
 
         User user = User.builder()

@@ -2,6 +2,7 @@ package resto_dev.modules.menu.products.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.menu.products.domain.model.Product;
 import resto_dev.modules.menu.products.application.port.input.CreateProductUseCase;
 import resto_dev.modules.menu.products.application.port.input.ListProductsUseCase;
@@ -24,6 +25,7 @@ public class ProductApplicationService
     private final ProductRepositoryPort productRepository;
 
     @Override
+    @Transactional
     public Product execute(CreateProductCommand command) {
         if (productRepository.existsByNameAndCategoryId(command.name(), command.categoryId())) {
             throw new IllegalArgumentException("Product with this name already exists in this category");
@@ -42,11 +44,13 @@ public class ProductApplicationService
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageModel<Product> execute(SearchProductsQuery query) {
         return productRepository.searchProducts(query);
     }
 
     @Override
+    @Transactional
     public Product execute(UUID id, UpdateProductCommand command) {
         Optional<Product> existingProduct = productRepository.findById(id);
 
@@ -66,6 +70,7 @@ public class ProductApplicationService
     }
 
     @Override
+    @Transactional
     public void execute(UUID id) {
         if (productRepository.findById(id).isEmpty()) {
             throw new IllegalArgumentException("Product not found with id: " + id);

@@ -5,5 +5,6 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface UpdateOrganizationMemberUseCase {
-    OrganizationMember execute(UUID organizationId, UUID memberId, UUID newRoleId, String currentPin, String newPin, BigDecimal newSalary, String newStatus, String newRoleName);
+    OrganizationMember execute(UUID organizationId, UUID memberId, UUID newRoleId, String currentPin, String newPin, BigDecimal newSalary, String newStatus, String newRoleName,
+                               String fullName, String email, String dni, String phoneNumber);
 }

@@ -13,9 +13,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import resto_dev.modules.adminsaas.members.infrastructure.persistence.repository.OrganizationMemberJpaRepository;
 import resto_dev.modules.adminsaas.organizations.infrastructure.persistence.repository.OrganizationJpaRepository;
+import resto_dev.modules.adminsaas.subscriptions.infrastructure.persistence.jpa.OrganizationSubscriptionJpaRepository;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.UUID;
+
 
 /**
  * Filter to resolve the tenant from the X-Organization-Id HTTP header.
@@ -32,6 +35,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
     private final OrganizationJpaRepository organizationRepository;
     private final OrganizationMemberJpaRepository memberRepository;
+    private final OrganizationSubscriptionJpaRepository subscriptionRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -49,18 +53,39 @@ public class TenantFilter extends OncePerRequestFilter {
         else if (!StringUtils.hasText(orgIdHeader)) {
             orgIdHeader = request.getParameter("organizationId");
         }
+        
+        // 🚨 ARCHITECTURAL FIX: Extract from URL path (e.g. /api/v1/organizations/{id}/pensioners)
+        // This acts as a fallback for modules transitioning to the tenant scope.
+        if (!StringUtils.hasText(orgIdHeader)) {
+            String path = request.getRequestURI();
+            if (path != null && path.contains("/organizations/")) {
+                String[] parts = path.split("/");
+                for (int i = 0; i < parts.length; i++) {
+                    if ("organizations".equals(parts[i]) && i + 1 < parts.length) {
+                        String possibleUuid = parts[i + 1];
+                        if (possibleUuid.length() == 36) { // basic UUID length check
+                            orgIdHeader = possibleUuid;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
 
         if (StringUtils.hasText(orgIdHeader)) {
             try {
                 UUID organizationId = UUID.fromString(orgIdHeader);
                 TenantContext.setCurrentOrganizationId(organizationId);
-                boolean accessGranted = setupTenantContext(organizationId);
+                boolean accessGranted = setupTenantContext(request, organizationId);
 
                 if (!accessGranted) {
+                    String errorCode = (String) request.getAttribute("tenantError");
+                    if (errorCode == null) errorCode = "ACCESS_DENIED";
+
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType("application/json");
                     response.getWriter()
-                            .write("{\"success\":false,\"message\":\"Access denied to this organization\"}");
+                            .write(String.format("{\"success\":false,\"code\":\"%s\",\"message\":\"Access denied to this organization\"}", errorCode));
                     return; // Stop filter chain
                 }
             } catch (IllegalArgumentException e) {
@@ -82,7 +107,7 @@ public class TenantFilter extends OncePerRequestFilter {
      * 
      * @return true if access is granted, false otherwise.
      */
-    private boolean setupTenantContext(UUID organizationId) {
+    private boolean setupTenantContext(HttpServletRequest request, UUID organizationId) {
         var orgOpt = organizationRepository.findById(organizationId);
         if (orgOpt.isEmpty()) {
             log.warn("Organization {} not found", organizationId);
@@ -106,6 +131,30 @@ public class TenantFilter extends OncePerRequestFilter {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
 
         if (isSuperAdmin || memberRepository.existsByOrganizationIdAndUserId(organizationId, userId)) {
+            
+            // ARCHITECTURE SaaS: Bloqueo de Muro de Contención para SUSCRIPCIONES
+            // Si no eres SUPER_ADMIN, verificamos que tu organización siga con plan activo.
+            if (!isSuperAdmin) {
+                var subOpt = subscriptionRepository.findFirstByOrganizationIdOrderByCreatedAtDesc(organizationId);
+                if (subOpt.isPresent()) {
+                    var sub = subOpt.get();
+                    if ("SUSPENDED".equals(sub.getStatus())) {
+                        log.warn("Organization {} is SUSPENDED. Access Denied.", organizationId);
+                        request.setAttribute("tenantError", "SUBSCRIPTION_SUSPENDED");
+                        return false;
+                    }
+                    if (sub.getEndDate() != null && sub.getEndDate().isBefore(LocalDate.now())) {
+                        log.warn("Organization {} subscription/trial EXPIRED on {}. Access Denied.", organizationId, sub.getEndDate());
+                        request.setAttribute("tenantError", "LICENSE_EXPIRED");
+                        return false;
+                    }
+                } else {
+                    log.warn("Organization {} has no active subscriptions. Access Denied.", organizationId);
+                    request.setAttribute("tenantError", "NO_SUBSCRIPTION");
+                    return false;
+                }
+            }
+
             TenantContext.setCurrentTenant(org.getSchemaName());
             log.debug("Set tenant context to {} for user {}", org.getSchemaName(), userId);
             return true;

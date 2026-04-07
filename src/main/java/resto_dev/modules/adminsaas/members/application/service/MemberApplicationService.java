@@ -15,6 +15,7 @@ import resto_dev.modules.adminsaas.members.application.port.input.GetStaffPerfor
 import resto_dev.modules.adminsaas.members.application.port.output.MemberRepositoryPort;
 import resto_dev.modules.adminsaas.members.domain.model.OrganizationMember;
 import resto_dev.modules.adminsaas.members.domain.model.StaffStats;
+import resto_dev.modules.adminsaas.subscriptions.infrastructure.persistence.jpa.OrganizationSubscriptionJpaRepository;
 import resto_dev.modules.adminsaas.users.application.command.AuthResult;
 import resto_dev.modules.adminsaas.users.application.port.output.UserRepositoryPort;
 import resto_dev.modules.adminsaas.users.domain.model.User;
@@ -45,6 +46,7 @@ public class MemberApplicationService implements
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final resto_dev.modules.sales.orders.application.port.output.OrderRepositoryPort orderRepository;
+    private final OrganizationSubscriptionJpaRepository subscriptionRepository;
 
     @Override
     public OrganizationMember execute(UUID organizationId, String fullName, String email, String dni, String phoneNumber, String roleName, String pin, BigDecimal salary) {
@@ -77,7 +79,19 @@ public class MemberApplicationService implements
         if (salary != null && salary.compareTo(BigDecimal.ZERO) < 0) {
             throw ApiException.badRequest("El salario no puede ser negativo.");
         }
-        // -------------------------------
+
+        // --- VALIDACIÓN DE LÍMITE DE USUARIOS (SaaS) ---
+        subscriptionRepository.findFirstByOrganizationIdOrderByCreatedAtDesc(organizationId)
+            .ifPresent(sub -> {
+                long activeCount = memberRepository.findAllByOrganization(organizationId).stream()
+                        .filter(OrganizationMember::isActive)
+                        .count();
+                
+                if (activeCount >= sub.getUserLimit()) {
+                    throw ApiException.badRequest("Has alcanzado el límite de usuarios permitidos (" + sub.getUserLimit() + ") para tu plan actual. Contacta con administración para ampliar tu capacidad.");
+                }
+            });
+        // -----------------------------------------------
 
         // Buscar el rol por nombre
         RoleEntity role = roleRepository.findByName(roleName.toUpperCase())
@@ -149,13 +163,43 @@ public class MemberApplicationService implements
     }
 
     @Override
-    public OrganizationMember execute(UUID organizationId, UUID memberId, UUID newRoleId, String currentPin, String newPin, BigDecimal newSalary, String newStatus, String newRoleName) {
+    public OrganizationMember execute(UUID organizationId, UUID memberId, UUID newRoleId, String currentPin, String newPin, BigDecimal newSalary, String newStatus, String newRoleName,
+                                   String fullName, String email, String dni, String phoneNumber) {
         OrganizationMember member = memberRepository.findById(memberId)
                 .orElseThrow(() -> ApiException.notFound("Empleado no encontrado"));
 
         if (!member.getOrganizationId().equals(organizationId)) {
             throw ApiException.forbidden("No puedes modificar miembros de otra organización");
         }
+
+        // --- ACTUALIZACIÓN DE DATOS DEL USUARIO ---
+        User user = userRepository.findById(member.getUserId())
+                .orElseThrow(() -> ApiException.notFound("Usuario vinculado no encontrado"));
+
+        if (fullName != null && !fullName.isBlank()) {
+            user.setFullName(fullName.trim());
+        }
+
+        if (dni != null && !dni.isBlank() && !dni.equals(user.getDni())) {
+            userRepository.findByDni(dni).ifPresent(u -> {
+                throw ApiException.conflict("El DNI '" + dni + "' ya está en uso por otro usuario.");
+            });
+            user.setDni(dni.trim());
+        }
+
+        if (email != null && !email.isBlank() && !email.equals(user.getEmail())) {
+            userRepository.findByEmail(email).ifPresent(u -> {
+                throw ApiException.conflict("El Email '" + email + "' ya está en uso por otro usuario.");
+            });
+            user.setEmail(email.trim());
+        }
+
+        if (phoneNumber != null) {
+            user.setPhoneNumber(phoneNumber.trim());
+        }
+
+        userRepository.save(user);
+        // ------------------------------------------
 
         // --- PROTECCIÓN DE CUENTA ADMINISTRATIVA ---
         // Obtener el ID del usuario autenticado desde el contexto de seguridad

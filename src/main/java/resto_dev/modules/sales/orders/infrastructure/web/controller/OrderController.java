@@ -237,15 +237,15 @@ public class OrderController {
     @Operation(summary = "Mi Historial de Pedidos", description = "Devuelve los pedidos realizados por el mesero autenticado.")
     public ResponseEntity<ApiResponse<PaginatedResponse<OrderSummaryResponse>>> getMyOrderHistory(
             @org.springframework.security.core.annotation.AuthenticationPrincipal UUID waiterId,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.OffsetDateTime startDate,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.OffsetDateTime endDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         SearchOrdersQuery query = SearchOrdersQuery.builder()
                 .waiterId(waiterId)
-                .startDate(startDate != null ? startDate.toLocalDateTime() : null)
-                .endDate(endDate != null ? endDate.toLocalDateTime() : null)
+                .startDate(startDate)
+                .endDate(endDate)
                 .page(page)
                 .size(size)
                 .build();
@@ -302,8 +302,8 @@ public class OrderController {
             @RequestParam(required = false) UUID tableId,
             @RequestParam(required = false) OrderStatus status,
             @RequestParam(required = false) String searchTerm,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.OffsetDateTime startDate,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.OffsetDateTime endDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "15") int size) {
 
@@ -312,8 +312,8 @@ public class OrderController {
                 .tableId(tableId)
                 .statuses(status != null ? List.of(status) : null)
                 .searchTerm(searchTerm)
-                .startDate(startDate != null ? startDate.toLocalDateTime() : null)
-                .endDate(endDate != null ? endDate.toLocalDateTime() : null)
+                .startDate(startDate)
+                .endDate(endDate)
                 .page(page)
                 .size(size)
                 .build();

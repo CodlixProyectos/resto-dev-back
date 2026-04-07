@@ -20,6 +20,11 @@ public interface OrganizationMemberJpaRepository extends JpaRepository<Organizat
 
     List<OrganizationMemberJpaEntity> findByUserId(UUID userId);
 
+    @Query("SELECT m FROM OrganizationMemberJpaEntity m JOIN FETCH m.organization WHERE m.user.id = :userId AND m.active = true")
+    List<OrganizationMemberJpaEntity> findActiveByUserIdWithOrganization(@Param("userId") UUID userId);
+
+
+
     List<OrganizationMemberJpaEntity> findByOrganizationId(UUID organizationId);
 
     List<OrganizationMemberJpaEntity> findByOrganizationIdAndUserId(UUID organizationId, UUID userId);

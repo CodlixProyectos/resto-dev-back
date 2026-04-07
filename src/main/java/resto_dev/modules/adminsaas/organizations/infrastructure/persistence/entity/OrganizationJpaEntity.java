@@ -33,7 +33,7 @@ public class OrganizationJpaEntity extends BaseEntity {
     @Column(name = "type", nullable = false, length = 50)
     private String type = "restaurant";
 
-    @Column(name = "owner_id", nullable = false)
+    @Column(name = "owner_id")
     private UUID ownerId;
 
     @Column(name = "legal_name")
@@ -75,6 +75,27 @@ public class OrganizationJpaEntity extends BaseEntity {
     private String secondaryColor;
 
     @Builder.Default
+    @Column(name = "has_inventory", nullable = false)
+    private boolean hasInventory = false;
+
+    @Builder.Default
+    @Column(name = "has_pensioners", nullable = false)
+    private boolean hasPensioners = false;
+
+    @Builder.Default
+    @Column(name = "has_kds", nullable = false)
+    private boolean hasKds = false;
+
+    @Builder.Default
     @Column(name = "active", nullable = false)
     private boolean active = true;
+
+    @Column(name = "invitation_code", unique = true, length = 20)
+    private String invitationCode;
+
+    @Column(name = "yape_qr_url", columnDefinition = "TEXT")
+    private String yapeQrUrl;
+
+    @Column(name = "plin_qr_url", columnDefinition = "TEXT")
+    private String plinQrUrl;
 }

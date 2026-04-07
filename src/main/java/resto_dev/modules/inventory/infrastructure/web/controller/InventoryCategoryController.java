@@ -33,7 +33,8 @@ public class InventoryCategoryController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name").ascending());
+        int pageIndex = Math.max(0, page - 1);
+        Pageable pageable = PageRequest.of(pageIndex, size, Sort.by("name").ascending());
         Page<InventoryCategoryJpaEntity> result;
         
         if (search != null && !search.trim().isEmpty()) {

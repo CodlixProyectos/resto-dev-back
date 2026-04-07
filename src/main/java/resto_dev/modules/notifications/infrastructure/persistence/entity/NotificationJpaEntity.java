@@ -38,6 +38,7 @@ public class NotificationJpaEntity {
     @Column(name = "action_url")
     private String actionUrl;
 
+    @Builder.Default
     @Column(name = "is_read", nullable = false)
     private boolean read = false;
 

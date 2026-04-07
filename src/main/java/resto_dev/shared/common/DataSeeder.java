@@ -67,8 +67,9 @@ public class DataSeeder implements CommandLineRunner {
     private void seedRoles() {
         List<PermissionEntity> allItems = permissionRepository.findAll();
 
-        // 1. OWNER — Always ensure all permissions
+        // 1. OWNER & ADMIN — Always ensure all permissions
         upsertRole("OWNER", "Dueño del restaurante", true, allItems);
+        upsertRole("ADMIN", "Administrador Principal (SaaS)", true, allItems);
 
         // 2. MANAGER — everything except governance
         upsertRole("MANAGER", "Administrador de operaciones", true,

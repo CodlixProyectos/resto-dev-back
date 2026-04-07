@@ -2,17 +2,57 @@ package resto_dev.shared.tenancy;
 
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 @Slf4j
 @Configuration
 public class FlywayConfig {
+
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
+
+    @Value("${spring.datasource.username}")
+    private String dbUsername;
+
+    @Value("${spring.datasource.password}")
+    private String dbPassword;
+
+    private void ensureDatabaseExists() {
+        try {
+            // Extract DB name and base connection URL (e.g., to connect to 'postgres' first)
+            int lastSlash = dbUrl.lastIndexOf("/");
+            String baseJdbcUrl = dbUrl.substring(0, lastSlash + 1) + "postgres";
+            String targetDbName = dbUrl.substring(lastSlash + 1);
+
+            // Special case for params in URL like ?sslmode=...
+            if (targetDbName.contains("?")) {
+                targetDbName = targetDbName.substring(0, targetDbName.indexOf("?"));
+            }
+
+            log.info("Checking if database '{}' exists on {}...", targetDbName, baseJdbcUrl);
+
+            try (Connection conn = DriverManager.getConnection(baseJdbcUrl, dbUsername, dbPassword);
+                 Statement stmt = conn.createStatement()) {
+
+                ResultSet rs = stmt.executeQuery("SELECT 1 FROM pg_database WHERE datname = '" + targetDbName + "'");
+                if (!rs.next()) {
+                    log.info("Database '{}' does not exist. Creating it now...", targetDbName);
+                    // Use execute as CREATE DATABASE cannot run in a transaction in some drivers
+                    stmt.execute("CREATE DATABASE " + targetDbName);
+                    log.info("Database '{}' created successfully.", targetDbName);
+                } else {
+                    log.info("Database '{}' already exists. Proceeding...", targetDbName);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Could not check/create database using the 'postgres' bridge. " +
+                    "This is normal if the DB already exists or permissions are restricted: {}", e.getMessage());
+        }
+    }
 
     /**
      * By naming this bean "flyway", Spring Boot's JPA auto-configuration will
@@ -23,6 +63,9 @@ public class FlywayConfig {
     @Bean
     public Flyway flyway(DataSource dataSource) {
         log.info("Starting Flyway Database Migrations...");
+
+        // 0. Ensure the database itself exists (Auto-create if missing)
+        ensureDatabaseExists();
 
         // 1. Ensure admin schema exists
         try (Connection connection = dataSource.getConnection()) {

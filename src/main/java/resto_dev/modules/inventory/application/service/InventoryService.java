@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.InventoryItemJpaEntity;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.StockMovementJpaEntity;
+import resto_dev.modules.inventory.infrastructure.persistence.repository.InventoryCategoryJpaRepository;
 import resto_dev.modules.inventory.infrastructure.persistence.repository.InventoryItemJpaRepository;
 import resto_dev.modules.inventory.infrastructure.persistence.repository.StockMovementJpaRepository;
 import resto_dev.modules.inventory.infrastructure.persistence.repository.SupplierJpaRepository;
+import resto_dev.modules.inventory.infrastructure.excel.InventoryExcelParser;
+import resto_dev.modules.inventory.infrastructure.persistence.entity.InventoryCategoryJpaEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,6 +26,7 @@ import java.util.UUID;
 public class InventoryService {
 
     private final InventoryItemJpaRepository itemRepository;
+    private final InventoryCategoryJpaRepository categoryRepository;
     private final StockMovementJpaRepository movementRepository;
     private final SupplierJpaRepository supplierRepository;
     private final resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher;
@@ -79,6 +83,47 @@ public class InventoryService {
             case "CONSUMO", "MERMA", "AJUSTE_NEG" -> new BigDecimal("-1");
             default -> BigDecimal.ZERO;
         };
+    }
+
+    @Transactional
+    public int bulkUploadItems(List<InventoryExcelParser.InventoryExcelRow> rows) {
+        int count = 0;
+        for (InventoryExcelParser.InventoryExcelRow row : rows) {
+            try {
+                // 1. Get or create category
+                InventoryCategoryJpaEntity category = null;
+                if (row.categoryName() != null && !row.categoryName().isBlank()) {
+                    category = categoryRepository.findByNameIgnoreCase(row.categoryName().trim())
+                            .orElseGet(() -> {
+                                InventoryCategoryJpaEntity newCat = new InventoryCategoryJpaEntity();
+                                newCat.setName(row.categoryName().trim());
+                                newCat.setCreatedAt(LocalDateTime.now());
+                                newCat.setActive(true);
+                                return categoryRepository.save(newCat);
+                            });
+                }
+
+                // 2. Build and save item
+                InventoryItemJpaEntity item = InventoryItemJpaEntity.builder()
+                        .name(row.name().trim())
+                        .description(row.description())
+                        .category(category)
+                        .unit(row.unit() != null ? row.unit().toLowerCase() : "un")
+                        .currentStock(row.initialStock())
+                        .minStock(BigDecimal.ZERO)
+                        .maxStock(BigDecimal.ZERO)
+                        .costPrice(row.costPrice())
+                        .active(true)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+
+                itemRepository.save(item);
+                count++;
+            } catch (Exception e) {
+                log.error("Failed to upload row: {}. Reason: {}", row.name(), e.getMessage());
+            }
+        }
+        return count;
     }
 
     @Transactional(readOnly = true)

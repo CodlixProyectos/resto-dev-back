@@ -33,7 +33,8 @@ public class SupplierController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search
     ) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("name").ascending());
+        int pageIndex = Math.max(0, page - 1);
+        Pageable pageable = PageRequest.of(pageIndex, size, Sort.by("name").ascending());
         return ResponseEntity.ok(ApiResponse.ok(PaginatedResponse.of(supplierService.getAllActive(pageable, search))));
     }
 

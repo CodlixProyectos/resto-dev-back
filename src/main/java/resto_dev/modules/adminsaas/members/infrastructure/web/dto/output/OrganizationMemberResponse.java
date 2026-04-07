@@ -4,21 +4,19 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Web response DTO representing an organization member.
- */
 public record OrganizationMemberResponse(
-        UUID id,
-        UUID organizationId,
-        UUID userId,
-        UUID roleId,
-        String fullName,
-        String email,
-        String phoneNumber,
-        String dni,
-        String roleName,
-        boolean active,
-        String status,
-        BigDecimal salary,
-        LocalDateTime joinedAt) {
+    UUID memberId,
+    UUID organizationId,
+    UUID userId,
+    UUID roleId,
+    String fullName,
+    String email,
+    String phoneNumber,
+    String dni,
+    String roleName,
+    boolean isActive,
+    String status,
+    BigDecimal salary,
+    LocalDateTime joinedAt
+) {
 }

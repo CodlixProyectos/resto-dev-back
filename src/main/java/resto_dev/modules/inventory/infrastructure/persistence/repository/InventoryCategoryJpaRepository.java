@@ -13,4 +13,5 @@ public interface InventoryCategoryJpaRepository extends JpaRepository<InventoryC
     Page<InventoryCategoryJpaEntity> findAll(Pageable pageable);
     Page<InventoryCategoryJpaEntity> findAllByNameContainingIgnoreCase(String name, Pageable pageable);
     Page<InventoryCategoryJpaEntity> findAllByActiveTrue(Pageable pageable);
+    java.util.Optional<InventoryCategoryJpaEntity> findByNameIgnoreCase(String name);
 }

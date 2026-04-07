@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.menu.products.application.command.CreateProductCommand;
+import resto_dev.modules.menu.products.application.port.input.BulkAddProductsUseCase;
 import resto_dev.modules.menu.products.application.port.input.CreateProductUseCase;
 import resto_dev.modules.menu.products.application.port.input.ListProductsUseCase;
 import resto_dev.modules.menu.products.application.query.SearchProductsQuery;
@@ -33,6 +34,7 @@ public class ProductController {
         private final ListProductsUseCase listProductsUseCase;
         private final resto_dev.modules.menu.products.application.port.input.UpdateProductUseCase updateProductUseCase;
         private final resto_dev.modules.menu.products.application.port.input.DeleteProductUseCase deleteProductUseCase;
+        private final BulkAddProductsUseCase bulkAddProductsUseCase;
         private final ProductWebMapper webMapper;
 
         @PostMapping("/create")
@@ -106,5 +108,18 @@ public class ProductController {
                         @PathVariable UUID id) {
                 deleteProductUseCase.execute(id);
                 return ResponseEntity.ok(ApiResponse.ok(null, "Producto eliminado exitosamente"));
+        }
+
+        @PostMapping("/bulk-upload")
+        @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_MENU')")
+        @Operation(summary = "Importación masiva de productos", description = "Carga productos desde un archivo Excel (.xlsx).")
+        public ResponseEntity<ApiResponse<List<ProductResponse>>> bulkUpload(
+                        @RequestHeader("X-Organization-Id") UUID orgId,
+                        @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+                List<Product> products = bulkAddProductsUseCase.importProducts(file);
+                List<ProductResponse> responses = products.stream()
+                                .map(webMapper::toResponse)
+                                .toList();
+                return ResponseEntity.ok(ApiResponse.ok(responses, "Importación masiva completada correctamente"));
         }
 }

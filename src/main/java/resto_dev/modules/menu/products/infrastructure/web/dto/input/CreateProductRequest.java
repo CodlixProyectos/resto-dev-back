@@ -2,7 +2,7 @@ package resto_dev.modules.menu.products.infrastructure.web.dto.input;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -12,7 +12,7 @@ public record CreateProductRequest(
 
         String description,
 
-        @NotNull(message = "Price is required") @Positive(message = "Price must be positive") BigDecimal price,
+        @NotNull(message = "Price is required") @PositiveOrZero(message = "Price must be positive or zero") BigDecimal price,
 
         @NotNull(message = "Category ID is required") UUID categoryId,
         

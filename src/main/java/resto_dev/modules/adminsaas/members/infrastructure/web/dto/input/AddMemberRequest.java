@@ -20,7 +20,7 @@ public class AddMemberRequest {
     private String roleName;
 
     @NotBlank(message = "El PIN es requerido para acceso POS")
-    @Size(min = 4, max = 6, message = "El PIN debe tener entre 4 y 6 caracteres")
+    @Size(min = 6, max = 6, message = "El PIN debe tener exactamente 6 caracteres")
     private String pin;
 
     private BigDecimal salary;

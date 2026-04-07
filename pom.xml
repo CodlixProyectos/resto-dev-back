@@ -30,6 +30,7 @@
 		<java.version>21</java.version>
 		<jjwt.version>0.12.6</jjwt.version>
 		<springdoc.version>3.0.1</springdoc.version>
+		<lombok.version>1.18.34</lombok.version>
 	</properties>
 	<dependencies>
 		<!-- Web -->
@@ -152,6 +153,12 @@
 			<artifactId>dotenv-java</artifactId>
 			<version>3.1.0</version>
 		</dependency>
+		<!-- Excel Processing (Apache POI) -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.4.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -166,6 +173,25 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<!-- Optional: If you use MapStruct, add it here too -->
+						<path>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-configuration-processor</artifactId>
+							<version>${project.parent.version}</version>
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 		</plugins>

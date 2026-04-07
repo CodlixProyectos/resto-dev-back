@@ -97,6 +97,10 @@ public class OrderWebMapper {
                     .orElse("Staff");
         }
 
+        var items = order.getItems() != null ? order.getItems().stream()
+                .map(this::toResponseItem)
+                .collect(Collectors.toList()) : java.util.Collections.<OrderItemResponse>emptyList();
+
         return new OrderSummaryResponse(
                 order.getId(),
                 order.getTableId(),
@@ -110,6 +114,7 @@ public class OrderWebMapper {
                 order.getTotal(),
                 order.getWaiterId(),
                 waiterName,
+                items,
                 order.getCreatedAt(),
                 minutesElapsed,
                 overdue);

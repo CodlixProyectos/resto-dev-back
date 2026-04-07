@@ -12,5 +12,9 @@ public record CreateOrganizationRequest(
 
         @NotBlank(message = "Slug is required") @Size(min = 2, max = 50) String slug,
 
+        @NotBlank(message = "Owner email is required") String ownerEmail,
+
+        @NotBlank(message = "Owner name is required") String ownerName,
+
         @Size(max = 50) String type) {
 }

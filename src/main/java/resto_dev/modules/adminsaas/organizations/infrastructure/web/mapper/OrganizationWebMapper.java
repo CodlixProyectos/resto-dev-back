@@ -17,6 +17,8 @@ public class OrganizationWebMapper {
         return new CreateOrganizationCommand(
                 request.name(),
                 request.slug(),
+                request.ownerEmail(),
+                request.ownerName(),
                 request.type());
     }
 
@@ -43,6 +45,13 @@ public class OrganizationWebMapper {
                 o.getSunatUser(),
                 o.getSunatPassword(),
                 o.getSunatClientId(),
-                o.getSunatClientSecret());
+                o.getSunatClientSecret(),
+                o.getInitialPassword(),
+                o.getInvitationCode(),
+                o.isHasInventory(),
+                o.isHasPensioners(),
+                o.isHasKds(),
+                o.getYapeQrUrl(),
+                o.getPlinQrUrl());
     }
 }

@@ -33,9 +33,22 @@ public class Organization {
     private String sunatPassword;
     private String sunatClientId;
     private String sunatClientSecret;
+    private String planId;
+    private String subscriptionStatus;
+    private LocalDateTime endDate;
+    private Integer userLimit;
     private String primaryColor;
     private String secondaryColor;
     private boolean active;
+    private boolean hasInventory;
+    private boolean hasPensioners;
+    private boolean hasKds;
+    private String invitationCode;
+    private String yapeQrUrl;
+    private String plinQrUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Ephemeral field used to share initial credentials only during creation
+    private String initialPassword;
 }

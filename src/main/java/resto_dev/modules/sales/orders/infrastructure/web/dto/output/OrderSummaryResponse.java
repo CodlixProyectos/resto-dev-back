@@ -18,6 +18,7 @@ public record OrderSummaryResponse(
         BigDecimal total,
         UUID waiterId,
         String waiterName,
+        java.util.List<OrderItemResponse> items,
         LocalDateTime createdAt,
         long minutesElapsed,
         boolean overdue) {

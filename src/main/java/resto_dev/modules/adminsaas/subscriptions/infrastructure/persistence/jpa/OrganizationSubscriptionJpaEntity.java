@@ -36,4 +36,7 @@ public class OrganizationSubscriptionJpaEntity extends BaseEntity {
 
     @Column(name = "end_date")
     private LocalDate endDate;
+
+    @Column(name = "user_limit")
+    private Integer userLimit;
 }

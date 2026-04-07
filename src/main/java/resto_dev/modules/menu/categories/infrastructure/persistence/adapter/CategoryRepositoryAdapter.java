@@ -35,6 +35,11 @@ public class CategoryRepositoryAdapter implements CategoryRepositoryPort {
     }
 
     @Override
+    public Optional<Category> findByName(String name) {
+        return repository.findByName(name).map(mapper::toDomain);
+    }
+
+    @Override
     public PageModel<Category> findAll(ListCategoriesQuery query) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest
                 .of(query.getPage(), query.getSize());

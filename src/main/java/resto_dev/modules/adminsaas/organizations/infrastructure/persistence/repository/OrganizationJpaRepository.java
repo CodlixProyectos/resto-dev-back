@@ -16,6 +16,8 @@ public interface OrganizationJpaRepository
 
     Optional<OrganizationJpaEntity> findBySlug(String slug);
 
+    Optional<OrganizationJpaEntity> findByInvitationCode(String invitationCode);
+
     List<OrganizationJpaEntity> findByOwnerId(UUID ownerId);
 
     boolean existsBySlug(String slug);

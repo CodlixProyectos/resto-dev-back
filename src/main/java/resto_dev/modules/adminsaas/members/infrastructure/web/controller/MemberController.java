@@ -140,7 +140,9 @@ public class MemberController {
                         @Valid @RequestBody UpdateMemberRequest request) {
 
                 OrganizationMember member = updateOrganizationMemberUseCase.execute(
-                                organizationId, memberId, request.getRoleId(), request.getCurrentPin(), request.getPin(), request.getSalary(), request.getStatus(), request.getRoleName());
+                                organizationId, memberId, request.getRoleId(), request.getCurrentPin(), request.getPin(), 
+                                request.getSalary(), request.getStatus(), request.getRoleName(),
+                                request.getFullName(), request.getEmail(), request.getDni(), request.getPhoneNumber());
 
                 return ResponseEntity.ok(ApiResponse.ok(toResponse(member), "Empleado actualizado exitosamente"));
         }

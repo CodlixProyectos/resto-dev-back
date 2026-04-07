@@ -1,5 +1,6 @@
 package resto_dev.modules.sales.orders.infrastructure.persistence.adapter;
 
+import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -105,6 +106,14 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
         if (query.endDate() != null) {
             spec = spec.and((root, cq, cb) -> cb.lessThanOrEqualTo(root.get("createdAt"), query.endDate()));
         }
+
+        // Optimization: Fetch Join items to avoid N+1 and empty item lists in history/billing
+        spec = spec.and((root, cq, cb) -> {
+            if (Long.class != cq.getResultType() && long.class != cq.getResultType()) {
+                root.fetch("items", JoinType.LEFT);
+            }
+            return null;
+        });
 
         return spec;
     }

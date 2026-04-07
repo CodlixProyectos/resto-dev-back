@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import resto_dev.modules.menu.categories.domain.model.Category;
+import resto_dev.modules.menu.categories.application.port.input.BulkAddCategoriesUseCase;
 import resto_dev.modules.menu.categories.application.port.input.CreateCategoryUseCase;
 import resto_dev.modules.menu.categories.application.port.input.DeleteCategoryUseCase;
 import resto_dev.modules.menu.categories.application.port.input.ListCategoriesUseCase;
@@ -37,6 +38,7 @@ public class CategoryController {
         private final ListCategoriesUseCase listCategoriesUseCase;
         private final UpdateCategoryUseCase updateCategoryUseCase;
         private final DeleteCategoryUseCase deleteCategoryUseCase;
+        private final BulkAddCategoriesUseCase bulkAddCategoriesUseCase;
         private final CategoryWebMapper categoryWebMapper;
 
         @PostMapping("/create")
@@ -110,5 +112,18 @@ public class CategoryController {
                         @PathVariable UUID id) {
                 deleteCategoryUseCase.execute(id);
                 return ResponseEntity.ok(ApiResponse.ok(null, "Categoría eliminada exitosamente"));
+        }
+
+        @PostMapping("/bulk-upload")
+        @PreAuthorize("hasPermission(#orgId, 'Organization', 'MANAGE_MENU')")
+        @Operation(summary = "Importación masiva de categorías", description = "Carga categorías desde un archivo Excel (.xlsx).")
+        public ResponseEntity<ApiResponse<List<CategoryResponse>>> bulkUpload(
+                        @RequestHeader("X-Organization-Id") UUID orgId,
+                        @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+                List<Category> categories = bulkAddCategoriesUseCase.importCategories(file);
+                List<CategoryResponse> responses = categories.stream()
+                                .map(categoryWebMapper::toResponse)
+                                .toList();
+                return ResponseEntity.ok(ApiResponse.ok(responses, "Importación masiva completada correctamente"));
         }
 }

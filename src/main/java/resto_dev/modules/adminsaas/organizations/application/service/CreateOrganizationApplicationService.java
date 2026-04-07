@@ -2,6 +2,7 @@ package resto_dev.modules.adminsaas.organizations.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import resto_dev.modules.adminsaas.members.infrastructure.persistence.entity.OrganizationMemberJpaEntity;
@@ -23,6 +24,7 @@ import resto_dev.shared.tenancy.SchemaService;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
@@ -47,38 +49,57 @@ public class CreateOrganizationApplicationService implements CreateOrganizationU
     private final OrganizationMemberJpaRepository memberRepository;
     private final UserJpaRepository userRepository;
     private final OrganizationJpaRepository organizationJpaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public Organization execute(CreateOrganizationCommand command, UUID ownerId) {
+    public Organization execute(CreateOrganizationCommand command, UUID superAdminId) {
         if (organizationRepository.existsBySlug(command.slug())) {
             throw ApiException.conflict("Slug already taken: " + command.slug());
         }
 
         String schemaName = "client_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 
-        // Fetch owner email to pre-populate organization contact info
-        UserJpaEntity owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> ApiException.notFound("Owner not found: " + ownerId));
+        // 1. Process Owner (Create if not exists)
+        String initialPassword = null;
+        UserJpaEntity owner = userRepository.findByEmail(command.ownerEmail()).orElse(null);
 
+        if (owner == null) {
+            log.info("👤 Creating new owner user for email: {}", command.ownerEmail());
+            initialPassword = UUID.randomUUID().toString().substring(0, 8);
+            
+            owner = UserJpaEntity.builder()
+                    .fullName(command.ownerName())
+                    .email(command.ownerEmail())
+                    .passwordHash(passwordEncoder.encode(initialPassword))
+                    .active(true)
+                    .superAdmin(false)
+                    .build();
+            
+            owner = userRepository.save(owner);
+        }
+
+        // 2. Create Organization
         Organization organization = Organization.builder()
                 .name(command.name())
                 .slug(command.slug())
                 .schemaName(schemaName)
                 .type(command.type() != null ? command.type() : "restaurant")
-                .ownerId(ownerId)
-                .email(owner.getEmail()) // Pre-populate with registration email
+                .ownerId(owner.getId())
+                .email(command.ownerEmail())
                 .active(true)
+                .invitationCode(generateInitialCode())
+                .initialPassword(initialPassword) // Ephemeral
                 .build();
 
         Organization saved = organizationRepository.save(organization);
 
         schemaService.createSchema(schemaName);
 
-        log.info("🏢 Organization '{}' ({}) created with schema '{}'",
-                saved.getName(), saved.getType(), schemaName);
+        log.info("🏢 Organization '{}' created with owner '{}' and schema '{}'",
+                saved.getName(), owner.getEmail(), schemaName);
 
-        // ✅ FIX: Automatically add owner as member with OWNER role
-        addOwnerAsMember(saved.getId(), ownerId);
+        // 3. Automatically add owner as member with OWNER role
+        addOwnerAsMember(saved.getId(), owner.getId());
 
         return saved;
     }
@@ -131,5 +152,15 @@ public class CreateOrganizationApplicationService implements CreateOrganizationU
         } else {
             log.debug("Owner {} already a member of organization {}", ownerId, organizationId);
         }
+    }
+
+    private String generateInitialCode() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder("RT-");
+        Random rnd = new Random();
+        for (int i = 0; i < 6; i++) {
+            sb.append(chars.charAt(rnd.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

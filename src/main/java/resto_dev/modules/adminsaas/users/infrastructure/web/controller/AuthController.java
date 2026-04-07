@@ -23,6 +23,8 @@ import resto_dev.modules.adminsaas.users.application.port.input.RegisterUserUseC
 import resto_dev.modules.adminsaas.users.application.port.input.DeleteUserAccountUseCase;
 import resto_dev.modules.adminsaas.users.application.port.input.UpdateUserPasswordUseCase;
 import resto_dev.modules.adminsaas.users.application.port.input.UpdateUserProfileUseCase;
+import resto_dev.modules.adminsaas.users.application.port.input.RegisterUserWithCodeUseCase;
+import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.RegisterWithCodeRequest;
 import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.UpdatePasswordRequest;
 import resto_dev.modules.adminsaas.users.infrastructure.web.dto.input.UpdateProfileRequest;
 import resto_dev.modules.adminsaas.users.application.command.AuthResult;
@@ -41,6 +43,7 @@ import java.util.UUID;
 public class AuthController {
 
         private final RegisterUserUseCase registerUserPort;
+        private final RegisterUserWithCodeUseCase registerUserWithCodeUseCase;
         private final LoginUserUseCase loginUserPort;
         private final GetUserProfileApplicationService getUserProfileUseCase;
         private final UpdateUserProfileUseCase updateUserProfileUseCase;
@@ -64,6 +67,18 @@ public class AuthController {
                 return ResponseEntity
                                 .status(HttpStatus.CREATED)
                                 .body(ApiResponse.created(response, "User registered successfully"));
+        }
+
+        @Operation(summary = "Registrar con código", description = "Crea una cuenta y vincula a organización mediante código.")
+        @PostMapping("/register-with-code")
+        public ResponseEntity<ApiResponse<UserResponse>> registerWithCode(
+                        @Valid @RequestBody RegisterWithCodeRequest request) {
+                User user = registerUserWithCodeUseCase.execute(userDtoMapper.toCommand(request));
+                UserResponse response = userDtoMapper.toResponse(user);
+
+                return ResponseEntity
+                                .status(HttpStatus.CREATED)
+                                .body(ApiResponse.created(response, "Registered with code successfully"));
         }
 
         @Operation(summary = "Iniciar sesión", description = "Autentica al usuario y devuelve un JWT token.")

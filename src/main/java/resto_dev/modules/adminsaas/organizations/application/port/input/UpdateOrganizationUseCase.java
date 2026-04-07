@@ -19,6 +19,8 @@ public interface UpdateOrganizationUseCase {
             String sunatUser,
             String sunatPassword,
             String sunatClientId,
-            String sunatClientSecret) {
+            String sunatClientSecret,
+            String yapeQrUrl,
+            String plinQrUrl) {
     }
 }
