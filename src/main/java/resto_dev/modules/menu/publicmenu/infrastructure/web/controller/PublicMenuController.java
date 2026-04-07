@@ -36,12 +36,7 @@ public class PublicMenuController {
     public ResponseEntity<ApiResponse<List<PublicCategoryDTO>>> getMenu(
             @PathVariable UUID organizationId) {
 
-        // La arquitectura TenantFilter automáticamente aislará por X-Organization-Id.
-        // Pero para `/public/`, el TenantFilter quizá requiera que pasemos el ID
-        // manualmente
-        // si Spring Security bloquea o no. Por ahora, asumimos que TenantFilter lee la
-        // cebecera
-        // que el Frontend enviará.
+        // La arquitectura TenantFilter automáticamente aislará por X-Organization-Id o por el Path.
         List<PublicCategoryDTO> menu = publicMenuService.getPublicMenu();
 
         return ResponseEntity.ok(ApiResponse.ok(menu));
