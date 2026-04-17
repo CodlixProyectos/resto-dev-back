@@ -13,7 +13,9 @@ import resto_dev.modules.layout.tables.domain.model.Table;
 import resto_dev.modules.layout.zones.application.port.output.ZoneRepositoryPort;
 import resto_dev.modules.layout.zones.domain.model.Zone;
 import resto_dev.modules.menu.publicmenu.application.service.PublicMenuApplicationService;
+import resto_dev.modules.menu.publicmenu.domain.model.PublicMenuCategory;
 import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicCategoryDTO;
+import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicProductDTO;
 import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicTableDTO;
 import resto_dev.shared.errors.ApiException;
 import resto_dev.shared.responses.ApiResponse;
@@ -37,7 +39,20 @@ public class PublicMenuController {
             @PathVariable UUID organizationId) {
 
         // La arquitectura TenantFilter automáticamente aislará por X-Organization-Id o por el Path.
-        List<PublicCategoryDTO> menu = publicMenuService.getPublicMenu();
+        List<PublicMenuCategory> domainMenu = publicMenuService.getPublicMenu();
+
+        // Map domain to DTO for response
+        List<PublicCategoryDTO> menu = domainMenu.stream().map(cat -> PublicCategoryDTO.builder()
+                .id(cat.getId())
+                .name(cat.getName())
+                .description(cat.getDescription())
+                .products(cat.getProducts().stream().map(p -> PublicProductDTO.builder()
+                        .id(p.getId())
+                        .name(p.getName())
+                        .description(p.getDescription())
+                        .price(p.getPrice())
+                        .build()).toList())
+                .build()).toList();
 
         return ResponseEntity.ok(ApiResponse.ok(menu));
     }

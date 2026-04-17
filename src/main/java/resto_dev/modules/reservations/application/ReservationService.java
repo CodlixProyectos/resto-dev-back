@@ -5,11 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import resto_dev.modules.layout.tables.application.port.output.TableRepositoryPort;
 import resto_dev.modules.layout.tables.domain.model.TableStatus;
-import resto_dev.modules.layout.tables.infrastructure.persistence.repository.TableJpaRepository;
-import resto_dev.modules.reservations.domain.Reservation;
-import resto_dev.modules.reservations.domain.ReservationStatus;
-import resto_dev.modules.reservations.infrastructure.persistence.ReservationJpaRepository;
+import resto_dev.modules.reservations.application.port.output.ReservationRepositoryPort;
+import resto_dev.modules.reservations.domain.model.Reservation;
+import resto_dev.modules.reservations.domain.model.ReservationStatus;
+import resto_dev.shared.tenancy.TenantContext;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,10 +20,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReservationService {
 
-    private final ReservationJpaRepository repository;
-    private final TableJpaRepository tableRepository;
+    private final ReservationRepositoryPort repository;
+    private final TableRepositoryPort tableRepository;
+    private final resto_dev.modules.sales.orders.application.port.input.GetOrderByIdUseCase getOrderByIdUseCase; // Placeholder if needed
     private final resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher;
-    private final resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper;
 
     @Transactional(readOnly = true)
     public List<Reservation> getAllReservations() {
@@ -68,8 +69,18 @@ public class ReservationService {
 
         // Notify Admin of new reservation
         adminEventPublisher.notifyAdmin(
-            resto_dev.shared.tenancy.TenantContext.getCurrentOrganizationId(),
-            adminNotificationMapper.fromReservation(savedReservation),
+            TenantContext.getCurrentOrganizationId(),
+            resto_dev.shared.domain.model.Notification.builder()
+                    .id(java.util.UUID.randomUUID().toString())
+                    .title("Nueva Reserva")
+                    .message(savedReservation.getCustomerName() + " ha reservado una mesa para " + savedReservation.getNumGuests() + " personas.")
+                    .type("message")
+                    .status("new")
+                    .timestamp(java.time.LocalDateTime.now())
+                    .relatedId(savedReservation.getId().toString())
+                    .relatedType("RESERVATION")
+                    .actionUrl("/app/reservations")
+                    .build(),
             "RESERVATION_CREATED"
         );
 

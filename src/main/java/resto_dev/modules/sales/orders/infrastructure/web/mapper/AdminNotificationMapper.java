@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import resto_dev.modules.sales.orders.domain.model.Order;
 import resto_dev.modules.sales.orders.infrastructure.web.dto.output.AdminNotificationResponse;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.InventoryItemJpaEntity;
-import resto_dev.modules.reservations.domain.Reservation;
+import resto_dev.modules.reservations.domain.model.Reservation;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

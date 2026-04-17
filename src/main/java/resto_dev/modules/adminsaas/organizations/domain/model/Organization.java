@@ -46,6 +46,7 @@ public class Organization {
     private String invitationCode;
     private String yapeQrUrl;
     private String plinQrUrl;
+    private String registrationStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -23,6 +23,10 @@ import java.time.LocalDate;
 import java.util.Random;
 import java.util.UUID;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import resto_dev.shared.messaging.RabbitMqConfig;
+import resto_dev.shared.messaging.dto.TenantProvisioningMessage;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,7 +39,7 @@ public class SaasOrganizationCreatorService {
     private final OrganizationMemberJpaRepository memberRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final FlywayConfig flywayConfig;
+    private final RabbitTemplate rabbitTemplate; // Inyectamos RabbitTemplate para enviar mensajes
     private final DataSource dataSource;
 
     @Transactional
@@ -72,7 +76,8 @@ public class SaasOrganizationCreatorService {
                 .schemaName(schemaName)
                 .ownerId(owner.getId())
                 .email(request.getOwnerEmail())
-                .active(true)
+                .active(false) // Desactivado hasta que el esquema esté listo
+                .registrationStatus("PENDING_SETUP") // Marcamos como pendiente de configuración
                 .type("restaurant")
                 .build();
         organization = organizationRepository.save(organization);
@@ -105,9 +110,17 @@ public class SaasOrganizationCreatorService {
         memberRepository.save(member);
         log.info("✅ Owner added as ADMIN member of org: {}", organization.getName());
 
-        // 7. Trigger Schema Migration
-        log.info("Triggering schema migration for: {}", schemaName);
-        flywayConfig.migrateTenantSchema(dataSource, schemaName);
+        // 7. PUBLICACIÓN EN RABBITMQ (¡La magia asíncrona!)
+        // En lugar de llamar a Flyway aquí, enviamos un mensaje al exchange.
+        log.info("Sending provisioning message for schema: {}", schemaName);
+        TenantProvisioningMessage message = new TenantProvisioningMessage(organization.getId(), schemaName);
+        
+        rabbitTemplate.convertAndSend(
+            RabbitMqConfig.TENANT_EXCHANGE, 
+            RabbitMqConfig.TENANT_PROVISIONING_ROUTING_KEY, 
+            message
+        );
+        log.info("Message sent to RabbitMQ successfully.");
 
         return CreateSaaSOrganizationResponse.builder()
                 .organizationId(organization.getId().toString())

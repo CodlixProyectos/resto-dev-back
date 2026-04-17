@@ -14,6 +14,9 @@ import resto_dev.modules.inventory.infrastructure.persistence.repository.StockMo
 import resto_dev.modules.inventory.infrastructure.persistence.repository.SupplierJpaRepository;
 import resto_dev.modules.inventory.infrastructure.excel.InventoryExcelParser;
 import resto_dev.modules.inventory.infrastructure.persistence.entity.InventoryCategoryJpaEntity;
+import resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort;
+import resto_dev.shared.domain.model.Notification;
+import resto_dev.shared.tenancy.TenantContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,8 +32,7 @@ public class InventoryService {
     private final InventoryCategoryJpaRepository categoryRepository;
     private final StockMovementJpaRepository movementRepository;
     private final SupplierJpaRepository supplierRepository;
-    private final resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher;
-    private final resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper;
+    private final AdminEventPublisherPort adminEventPublisher;
 
     @Transactional
     public void recordMovement(UUID itemId, String type, BigDecimal quantity, String reason, BigDecimal unitPrice, UUID supplierId) {
@@ -52,7 +54,6 @@ public class InventoryService {
         movementRepository.save(movement);
 
         // 2. Update stock levels
-        // positive for COMPRA/AJUSTE_IN, negative for CONSUMO/MERMA/AJUSTE_OUT
         BigDecimal multiplier = getMultiplierForType(type);
         BigDecimal change = quantity.multiply(multiplier);
         
@@ -70,8 +71,18 @@ public class InventoryService {
         // Notify Admin if stock is low
         if (savedItem.getCurrentStock().compareTo(savedItem.getMinStock()) <= 0) {
             adminEventPublisher.notifyAdmin(
-                resto_dev.shared.tenancy.TenantContext.getCurrentOrganizationId(),
-                adminNotificationMapper.fromInventoryItem(savedItem),
+                TenantContext.getCurrentOrganizationId(),
+                Notification.builder()
+                        .id(java.util.UUID.randomUUID().toString())
+                        .title("Stock Bajo")
+                        .message("El producto \"" + savedItem.getName() + "\" está por debajo del nivel mínimo.")
+                        .type("warning")
+                        .status("new")
+                        .timestamp(LocalDateTime.now())
+                        .relatedId(savedItem.getId().toString())
+                        .relatedType("INVENTORY")
+                        .actionUrl("/app/inventory")
+                        .build(),
                 "LOW_STOCK"
             );
         }

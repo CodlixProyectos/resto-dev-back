@@ -1,7 +1,7 @@
 package resto_dev.modules.reservations.infrastructure.api.mapper;
 
 import org.springframework.stereotype.Component;
-import resto_dev.modules.reservations.domain.Reservation;
+import resto_dev.modules.reservations.domain.model.Reservation;
 import resto_dev.modules.reservations.infrastructure.api.dto.output.ReservationResponse;
 import java.util.List;
 import java.util.stream.Collectors;

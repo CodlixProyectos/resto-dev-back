@@ -1,0 +1,16 @@
+services:
+  # RabbitMQ: Gestor de colas para procesamiento asíncrono
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: codlix-rabbitmq
+    ports:
+      - "5672:5672"   # Puerto AMQP (mensajería)
+      - "15672:15672" # Puerto Management (panel de control UI)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  rabbitmq_data:

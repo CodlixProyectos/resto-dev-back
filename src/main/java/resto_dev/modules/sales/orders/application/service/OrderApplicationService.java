@@ -46,7 +46,6 @@ public class OrderApplicationService implements
     private final resto_dev.modules.sales.orders.application.port.output.WaiterEventPublisherPort waiterEventPublisher;
     private final TableEventPublisherPort tableEventPublisher;
     private final resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher;
-    private final resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper;
 
     public OrderApplicationService(
             OrderRepositoryPort orderRepository,
@@ -55,8 +54,7 @@ public class OrderApplicationService implements
             KitchenEventPublisherPort kitchenEventPublisher,
             resto_dev.modules.sales.orders.application.port.output.WaiterEventPublisherPort waiterEventPublisher,
             TableEventPublisherPort tableEventPublisher,
-            resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher,
-            resto_dev.modules.sales.orders.infrastructure.web.mapper.AdminNotificationMapper adminNotificationMapper) {
+            resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort adminEventPublisher) {
         this.orderRepository = orderRepository;
         this.tableRepository = tableRepository;
         this.productRepository = productRepository;
@@ -64,7 +62,6 @@ public class OrderApplicationService implements
         this.waiterEventPublisher = waiterEventPublisher;
         this.tableEventPublisher = tableEventPublisher;
         this.adminEventPublisher = adminEventPublisher;
-        this.adminNotificationMapper = adminNotificationMapper;
     }
 
     @Override
@@ -135,7 +132,17 @@ public class OrderApplicationService implements
         // Notify Admin
         adminEventPublisher.notifyAdmin(
                 TenantContext.getCurrentOrganizationId(),
-                adminNotificationMapper.fromOrder(savedOrder, "ORDER_CREATED"),
+                resto_dev.shared.domain.model.Notification.builder()
+                        .id(java.util.UUID.randomUUID().toString())
+                        .title("Orden Creada")
+                        .message("Se ha recibido un nuevo pedido.")
+                        .type("info")
+                        .status("new")
+                        .timestamp(java.time.LocalDateTime.now())
+                        .relatedId(savedOrder.getId().toString())
+                        .relatedType("ORDER")
+                        .actionUrl("/app/sales/history")
+                        .build(),
                 "ORDER_CREATED"
         );
 
@@ -250,7 +257,17 @@ public class OrderApplicationService implements
             // Notify Admin of Payment
             adminEventPublisher.notifyAdmin(
                     TenantContext.getCurrentOrganizationId(),
-                    adminNotificationMapper.fromOrder(savedOrder, "ORDER_PAID"),
+                    resto_dev.shared.domain.model.Notification.builder()
+                            .id(java.util.UUID.randomUUID().toString())
+                            .title("Pago Recibido")
+                            .message("Se ha registrado el pago de la orden.")
+                            .type("success")
+                            .status("new")
+                            .timestamp(java.time.LocalDateTime.now())
+                            .relatedId(savedOrder.getId().toString())
+                            .relatedType("ORDER")
+                            .actionUrl("/app/sales/history")
+                            .build(),
                     "ORDER_PAID"
             );
         }

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import resto_dev.modules.reservations.domain.ReservationStatus;
+import resto_dev.modules.reservations.domain.model.ReservationStatus;
 
 public record ReservationResponse(
     UUID id,

@@ -6,15 +6,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import resto_dev.modules.sales.orders.application.port.output.AdminEventPublisherPort;
 import resto_dev.modules.sales.orders.infrastructure.web.dto.output.AdminNotificationResponse;
+import resto_dev.shared.domain.model.Notification;
+import resto_dev.modules.notifications.application.service.NotificationAppService;
+import resto_dev.modules.notifications.infrastructure.persistence.entity.NotificationJpaEntity;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import resto_dev.modules.notifications.application.service.NotificationAppService;
-import resto_dev.modules.notifications.infrastructure.persistence.entity.NotificationJpaEntity;
 
 @Slf4j
 @Component
@@ -22,6 +23,7 @@ import resto_dev.modules.notifications.infrastructure.persistence.entity.Notific
 public class SseAdminEventPublisher implements AdminEventPublisherPort {
 
     private final NotificationAppService notificationAppService;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     // Mapa: OrganizationID -> Lista de Suscripciones (Administradores)
     private final ConcurrentHashMap<UUID, List<SseEmitter>> orgAdminsEmitters = new ConcurrentHashMap<>();
@@ -59,7 +61,20 @@ public class SseAdminEventPublisher implements AdminEventPublisherPort {
     }
 
     @Override
-    public void notifyAdmin(UUID organizationId, AdminNotificationResponse notification, String eventType) {
+    public void notifyAdmin(UUID organizationId, Notification notification, String eventType) {
+        // Map domain to DTO for broadcasting
+        AdminNotificationResponse response = AdminNotificationResponse.builder()
+                .id(notification.getId())
+                .title(notification.getTitle())
+                .message(notification.getMessage())
+                .type(notification.getType())
+                .status(notification.getStatus())
+                .timestamp(notification.getTimestamp().format(formatter))
+                .relatedId(notification.getRelatedId())
+                .relatedType(notification.getRelatedType())
+                .actionUrl(notification.getActionUrl())
+                .build();
+
         // Save to Database for persistence
         try {
             NotificationJpaEntity entity = NotificationJpaEntity.builder()
@@ -71,13 +86,12 @@ public class SseAdminEventPublisher implements AdminEventPublisherPort {
                     .relatedId(notification.getRelatedId())
                     .relatedType(notification.getRelatedType())
                     .actionUrl(notification.getActionUrl())
-                    .createdAt(java.time.LocalDateTime.parse(notification.getTimestamp()))
+                    .createdAt(notification.getTimestamp())
                     .read(false)
                     .build();
             notificationAppService.save(entity);
         } catch (Exception e) {
             log.error("Error persisting notification to database: {}", e.getMessage());
-            // We continue with broadcasting even if saving fails to keep real-time UI fast
         }
 
         List<SseEmitter> emitters = orgAdminsEmitters.get(organizationId);
@@ -92,7 +106,7 @@ public class SseAdminEventPublisher implements AdminEventPublisherPort {
             try {
                 emitter.send(SseEmitter.event()
                         .name(eventType)
-                        .data(notification));
+                        .data(response)); // Send the DTO
             } catch (Exception e) {
                 deadEmitters.add(emitter);
             }

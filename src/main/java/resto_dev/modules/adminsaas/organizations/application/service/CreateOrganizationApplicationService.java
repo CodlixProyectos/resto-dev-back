@@ -21,6 +21,9 @@ import resto_dev.shared.security.permissions.PermissionRepository;
 import resto_dev.shared.security.permissions.RoleEntity;
 import resto_dev.shared.security.permissions.RoleRepository;
 import resto_dev.shared.tenancy.SchemaService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import resto_dev.shared.messaging.RabbitMqConfig;
+import resto_dev.shared.messaging.dto.TenantProvisioningMessage;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -50,11 +53,17 @@ public class CreateOrganizationApplicationService implements CreateOrganizationU
     private final UserJpaRepository userRepository;
     private final OrganizationJpaRepository organizationJpaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public Organization execute(CreateOrganizationCommand command, UUID superAdminId) {
-        if (organizationRepository.existsBySlug(command.slug())) {
-            throw ApiException.conflict("Slug already taken: " + command.slug());
+        String slug = command.slug();
+        if (slug == null || slug.isBlank()) {
+            slug = generateSlug(command.name());
+        }
+
+        if (organizationRepository.existsBySlug(slug)) {
+            throw ApiException.conflict("Slug already taken: " + slug);
         }
 
         String schemaName = "client_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
@@ -81,19 +90,38 @@ public class CreateOrganizationApplicationService implements CreateOrganizationU
         // 2. Create Organization
         Organization organization = Organization.builder()
                 .name(command.name())
-                .slug(command.slug())
+                .slug(slug)
                 .schemaName(schemaName)
                 .type(command.type() != null ? command.type() : "restaurant")
                 .ownerId(owner.getId())
                 .email(command.ownerEmail())
-                .active(true)
+                .active(false) // Deactivated until schema is ready
+                .registrationStatus("PENDING_SETUP")
                 .invitationCode(generateInitialCode())
                 .initialPassword(initialPassword) // Ephemeral
                 .build();
 
         Organization saved = organizationRepository.save(organization);
 
-        schemaService.createSchema(schemaName);
+        log.info("Attempting to send provisioning message for schema: {}", schemaName);
+        try {
+            TenantProvisioningMessage message = new TenantProvisioningMessage(saved.getId(), schemaName);
+            rabbitTemplate.convertAndSend(
+                RabbitMqConfig.TENANT_EXCHANGE, 
+                RabbitMqConfig.TENANT_PROVISIONING_ROUTING_KEY, 
+                message
+            );
+            log.info("Message sent to RabbitMQ successfully (Async).");
+        } catch (Exception e) {
+            log.warn("⚠️ RabbitMQ is DOWN. Falling back to Synchronous provisioning: {}", e.getMessage());
+            // Fallback: execute synchronously if RabbitMQ is not available
+            schemaService.createSchema(schemaName);
+            
+            // Mark as active immediately since it's already done
+            saved.setActive(true);
+            saved.setRegistrationStatus("ACTIVE");
+            organizationRepository.save(saved);
+        }
 
         log.info("🏢 Organization '{}' created with owner '{}' and schema '{}'",
                 saved.getName(), owner.getEmail(), schemaName);
@@ -162,5 +190,12 @@ public class CreateOrganizationApplicationService implements CreateOrganizationU
             sb.append(chars.charAt(rnd.nextInt(chars.length())));
         }
         return sb.toString();
+    }
+    private String generateSlug(String name) {
+        return name.toLowerCase()
+                .replaceAll("[^a-z0-9]", "-")
+                .replaceAll("-+", "-")
+                .replaceAll("^-|-$", "")
+                + "-" + (System.currentTimeMillis() % 1000);
     }
 }

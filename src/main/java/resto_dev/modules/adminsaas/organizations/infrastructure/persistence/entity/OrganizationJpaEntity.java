@@ -98,4 +98,14 @@ public class OrganizationJpaEntity extends BaseEntity {
 
     @Column(name = "plin_qr_url", columnDefinition = "TEXT")
     private String plinQrUrl;
+
+    /**
+     * Estado del registro y provisionamiento de la organización.
+     * PENDING_SETUP: Se ha creado el registro pero falta migrar el esquema.
+     * ACTIVE: El esquema está listo y la organización puede operar.
+     * FAILED_SETUP: Hubo un error crítico al crear el esquema.
+     */
+    @Builder.Default
+    @Column(name = "registration_status", length = 30)
+    private String registrationStatus = "ACTIVE";
 }

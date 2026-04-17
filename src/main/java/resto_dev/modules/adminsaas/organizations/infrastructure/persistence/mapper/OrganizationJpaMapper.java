@@ -33,6 +33,7 @@ public class OrganizationJpaMapper {
                 .invitationCode(entity.getInvitationCode())
                 .yapeQrUrl(entity.getYapeQrUrl())
                 .plinQrUrl(entity.getPlinQrUrl())
+                .registrationStatus(entity.getRegistrationStatus())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -62,6 +63,7 @@ public class OrganizationJpaMapper {
                 .invitationCode(org.getInvitationCode())
                 .yapeQrUrl(org.getYapeQrUrl())
                 .plinQrUrl(org.getPlinQrUrl())
+                .registrationStatus(org.getRegistrationStatus())
                 .build();
 
         if (org.getId() != null) {

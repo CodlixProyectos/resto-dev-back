@@ -8,8 +8,8 @@ import resto_dev.modules.menu.categories.domain.model.Category;
 import resto_dev.modules.menu.products.application.port.output.ProductRepositoryPort;
 import resto_dev.modules.menu.products.application.query.SearchProductsQuery;
 import resto_dev.modules.menu.products.domain.model.Product;
-import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicCategoryDTO;
-import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicProductDTO;
+import resto_dev.modules.menu.publicmenu.domain.model.PublicMenuCategory;
+import resto_dev.modules.menu.publicmenu.domain.model.PublicMenuProduct;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class PublicMenuApplicationService {
     private final CategoryRepositoryPort categoryRepository;
     private final ProductRepositoryPort productRepository;
 
-    public List<PublicCategoryDTO> getPublicMenu() {
+    public List<PublicMenuCategory> getPublicMenu() {
         // Fetch active categories (up to 1000)
         ListCategoriesQuery catQuery = ListCategoriesQuery.builder()
                 .page(0)
@@ -43,23 +43,24 @@ public class PublicMenuApplicationService {
         Map<java.util.UUID, List<Product>> productsByCategory = products.stream()
                 .collect(Collectors.groupingBy(Product::getCategoryId));
 
-        // Assemble Nested Menu
+        // Assemble Nested Menu using Domain Models
         return categories.stream().map(cat -> {
             List<Product> catProducts = productsByCategory.getOrDefault(cat.getId(), List.of());
-            List<PublicProductDTO> productDTOs = catProducts.stream()
-                    .map(p -> PublicProductDTO.builder()
+            List<PublicMenuProduct> productModels = catProducts.stream()
+                    .map(p -> PublicMenuProduct.builder()
                             .id(p.getId())
                             .name(p.getName())
                             .description(p.getDescription())
                             .price(p.getPrice())
-                            .build())
+                            .imageUrl(p.getImageUrl())
+                                    .build())
                     .toList();
 
-            return PublicCategoryDTO.builder()
+            return PublicMenuCategory.builder()
                     .id(cat.getId())
                     .name(cat.getName())
                     .description(cat.getDescription())
-                    .products(productDTOs)
+                    .products(productModels)
                     .build();
         }).toList();
     }
