@@ -107,7 +107,9 @@ public class OrganizationController {
                                 subscription != null ? subscription.getStatus() : "INACTIVE",
                                 subscription != null ? subscription.getEndDate() : null,
                                 subscription != null ? subscription.getStartDate() : null,
-                                subscription != null && subscription.getUserLimit() != null ? subscription.getUserLimit() : 5,
+                                subscription != null && subscription.getUserLimit() != null 
+                                    ? subscription.getUserLimit() 
+                                    : (subscription != null ? subscription.getPlan().getMaxUsers() : 5),
                                 org.isHasInventory(),
                                 org.isHasPensioners(),
                                 org.isHasKds(),
@@ -175,7 +177,9 @@ public class OrganizationController {
                                         subscription != null ? subscription.getStatus() : "INACTIVE",
                                         subscription != null ? subscription.getEndDate() : null,
                                         subscription != null ? subscription.getStartDate() : null,
-                                        subscription != null && subscription.getUserLimit() != null ? subscription.getUserLimit() : 5,
+                                        subscription != null && subscription.getUserLimit() != null 
+                                            ? subscription.getUserLimit() 
+                                            : (subscription != null ? subscription.getPlan().getMaxUsers() : 5),
                                         org.isHasInventory(),
                                         org.isHasPensioners(),
                                         org.isHasKds(),
