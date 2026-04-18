@@ -87,8 +87,10 @@ public class MemberApplicationService implements
                         .filter(OrganizationMember::isActive)
                         .count();
                 
-                if (activeCount >= sub.getUserLimit()) {
-                    throw ApiException.badRequest("Has alcanzado el límite de usuarios permitidos (" + sub.getUserLimit() + ") para tu plan actual. Contacta con administración para ampliar tu capacidad.");
+                int limit = sub.getUserLimit() != null ? sub.getUserLimit() : sub.getPlan().getMaxUsers();
+                
+                if (activeCount >= limit) {
+                    throw ApiException.badRequest("Has alcanzado el límite de usuarios permitidos (" + limit + ") para tu plan actual. Contacta con administración para ampliar tu capacidad.");
                 }
             });
         // -----------------------------------------------
