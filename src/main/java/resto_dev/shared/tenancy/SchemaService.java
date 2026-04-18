@@ -56,7 +56,7 @@ public class SchemaService {
      * Prevent SQL injection — only allow valid schema names.
      */
     private void validateSchemaName(String schemaName) {
-        if (schemaName == null || !schemaName.matches("^client_[a-z0-9]{1,20}$")) {
+        if (schemaName == null || !schemaName.matches("^client_[a-z0-9_]{1,60}$")) {
             throw new IllegalArgumentException("Invalid schema name: " + schemaName);
         }
     }

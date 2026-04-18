@@ -23,9 +23,7 @@ import java.time.LocalDate;
 import java.util.Random;
 import java.util.UUID;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import resto_dev.shared.messaging.RabbitMqConfig;
-import resto_dev.shared.messaging.dto.TenantProvisioningMessage;
+import resto_dev.shared.tenancy.SchemaService;
 
 @Slf4j
 @Service
@@ -39,7 +37,7 @@ public class SaasOrganizationCreatorService {
     private final OrganizationMemberJpaRepository memberRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final RabbitTemplate rabbitTemplate; // Inyectamos RabbitTemplate para enviar mensajes
+    private final SchemaService schemaService;
     private final DataSource dataSource;
 
     @Transactional
@@ -110,17 +108,22 @@ public class SaasOrganizationCreatorService {
         memberRepository.save(member);
         log.info("✅ Owner added as ADMIN member of org: {}", organization.getName());
 
-        // 7. PUBLICACIÓN EN RABBITMQ (¡La magia asíncrona!)
-        // En lugar de llamar a Flyway aquí, enviamos un mensaje al exchange.
-        log.info("Sending provisioning message for schema: {}", schemaName);
-        TenantProvisioningMessage message = new TenantProvisioningMessage(organization.getId(), schemaName);
-        
-        rabbitTemplate.convertAndSend(
-            RabbitMqConfig.TENANT_EXCHANGE, 
-            RabbitMqConfig.TENANT_PROVISIONING_ROUTING_KEY, 
-            message
-        );
-        log.info("Message sent to RabbitMQ successfully.");
+        // 7. PROVISIONAMIENTO SÍNCRONO (Reemplaza a RabbitMQ)
+        log.info("Starting synchronous provisioning for schema: {}", schemaName);
+        try {
+            schemaService.createSchema(schemaName);
+            
+            // 8. Activar organización tras creación exitosa del esquema
+            organization.setRegistrationStatus("ACTIVE");
+            organization.setActive(true);
+            organizationRepository.save(organization);
+            log.info("✅ Schema created and organization activated successfully.");
+        } catch (Exception e) {
+            log.error("❌ Error during synchronous provisioning: {}", e.getMessage());
+            organization.setRegistrationStatus("FAILED_SETUP");
+            organizationRepository.save(organization);
+            throw new RuntimeException("Error al configurar el entorno de la organización: " + e.getMessage());
+        }
 
         return CreateSaaSOrganizationResponse.builder()
                 .organizationId(organization.getId().toString())
