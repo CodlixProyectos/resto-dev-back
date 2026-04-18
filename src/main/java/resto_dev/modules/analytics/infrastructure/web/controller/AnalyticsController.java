@@ -34,6 +34,7 @@ public class AnalyticsController {
     private final GetRecentActivityUseCase getRecentActivityUseCase;
     private final GetSalesByCategoryUseCase getSalesByCategoryUseCase;
     private final GetRevenueHistoryUseCase getRevenueHistoryUseCase;
+    private final resto_dev.modules.analytics.application.port.input.GetInventoryAnalyticsUseCase getInventoryAnalyticsUseCase;
 
     @GetMapping("/sales-summary")
     @Operation(summary = "Get sales summary", description = "Returns total revenue, order count, and other KPIs for a date range")
@@ -97,6 +98,13 @@ public class AnalyticsController {
         DateRange dateRange = toDateRange(startDate, endDate);
         List<DailyRevenue> history = getRevenueHistoryUseCase.getRevenueHistory(orgId, dateRange);
         return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("/inventory")
+    @Operation(summary = "Get inventory analytics", description = "Returns stock levels, low stock alerts, and inventory value")
+    public ResponseEntity<resto_dev.modules.analytics.domain.model.InventoryAnalytics> getInventoryAnalytics(
+            @RequestHeader("X-Organization-Id") UUID orgId) {
+        return ResponseEntity.ok(getInventoryAnalyticsUseCase.getInventoryAnalytics(orgId));
     }
 
     private DateRange toDateRange(OffsetDateTime start, OffsetDateTime end) {

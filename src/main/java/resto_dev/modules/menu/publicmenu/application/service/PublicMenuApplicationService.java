@@ -38,6 +38,8 @@ public class PublicMenuApplicationService {
                 .isActive(true)
                 .build();
         List<Product> products = productRepository.searchProducts(prodQuery).content();
+        
+        System.out.println("DEBUG: Found " + categories.size() + " categories and " + products.size() + " products for public menu.");
 
         // Group products by category ID
         Map<java.util.UUID, List<Product>> productsByCategory = products.stream()

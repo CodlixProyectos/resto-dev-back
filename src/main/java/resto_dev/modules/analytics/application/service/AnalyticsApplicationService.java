@@ -16,10 +16,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import resto_dev.modules.analytics.application.port.input.GetInventoryAnalyticsUseCase;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AnalyticsApplicationService implements GetSalesSummaryUseCase, GetTopProductsUseCase, GetRevenueHistoryUseCase {
+public class AnalyticsApplicationService implements GetSalesSummaryUseCase, GetTopProductsUseCase, GetRevenueHistoryUseCase, GetInventoryAnalyticsUseCase {
 
     private final AnalyticsRepositoryPort repositoryPort;
 
@@ -53,6 +55,37 @@ public class AnalyticsApplicationService implements GetSalesSummaryUseCase, GetT
                 LocalDateTime.now()
             );
         }
-        return repositoryPort.getRevenueHistory(organizationId, dateRange);
+
+        List<DailyRevenue> existingRevenue = repositoryPort.getRevenueHistory(organizationId, dateRange);
+
+        // Fill gaps with $0 revenue for a continuous timeline
+        java.time.LocalDate start = dateRange.getStartDate().toLocalDate();
+        java.time.LocalDate end = dateRange.getEndDate().toLocalDate();
+
+        java.util.Map<java.time.LocalDate, java.math.BigDecimal> revenueMap = existingRevenue.stream()
+            .collect(java.util.stream.Collectors.toMap(
+                DailyRevenue::getDate, 
+                DailyRevenue::getRevenue,
+                (v1, v2) -> v1 // In case of duplicates, though not expected
+            ));
+
+        java.util.List<DailyRevenue> fullHistory = new java.util.ArrayList<>();
+        java.time.LocalDate current = start;
+
+        // Ensure we don't go beyond today if the range ends in the future
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate actualEnd = end.isAfter(today) ? today : end;
+
+        while (!current.isAfter(actualEnd)) {
+            java.math.BigDecimal revenue = revenueMap.getOrDefault(current, java.math.BigDecimal.ZERO);
+            fullHistory.add(new DailyRevenue(current, revenue));
+            current = current.plusDays(1);
+        }
+
+        return fullHistory;
+    }
+
+    public resto_dev.modules.analytics.domain.model.InventoryAnalytics getInventoryAnalytics(UUID organizationId) {
+        return repositoryPort.getInventoryAnalytics(organizationId);
     }
 }

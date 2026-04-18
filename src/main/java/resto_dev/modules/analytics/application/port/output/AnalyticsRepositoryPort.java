@@ -20,4 +20,6 @@ public interface AnalyticsRepositoryPort {
     List<CategorySales> getSalesByCategory(UUID organizationId, DateRange dateRange);
 
     List<resto_dev.modules.analytics.domain.model.DailyRevenue> getRevenueHistory(UUID organizationId, DateRange dateRange);
+
+    resto_dev.modules.analytics.domain.model.InventoryAnalytics getInventoryAnalytics(UUID organizationId);
 }

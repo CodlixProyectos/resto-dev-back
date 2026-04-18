@@ -217,4 +217,92 @@ public class AnalyticsRepositoryAdapter implements AnalyticsRepositoryPort {
         rs.getBigDecimal("daily_revenue")
     ), start, end);
   }
+  
+  @Override
+  public resto_dev.modules.analytics.domain.model.InventoryAnalytics getInventoryAnalytics(UUID organizationId) {
+    setTenantSchema(organizationId);
+    
+    // 1. Summary Stats
+    String summarySql = """
+        SELECT 
+            COUNT(id) as total_items,
+            SUM(CASE WHEN current_stock <= min_stock THEN 1 ELSE 0 END) as low_stock_count,
+            SUM(current_stock * cost_price) as total_value
+        FROM inventory_items
+        WHERE active = true
+        """;
+        
+    resto_dev.modules.analytics.domain.model.InventoryAnalytics summary = jdbcTemplate.queryForObject(summarySql, (rs, rowNum) -> 
+        resto_dev.modules.analytics.domain.model.InventoryAnalytics.builder()
+            .totalItems(rs.getLong("total_items"))
+            .lowStockCount(rs.getLong("low_stock_count"))
+            .totalInventoryValue(rs.getBigDecimal("total_value"))
+            .build()
+    );
+    
+    // 2. Category Distribution
+    String categorySql = """
+        SELECT 
+            COALESCE(ic.name, 'Sin Categoría') as category_name,
+            SUM(ii.current_stock * ii.cost_price) as total_value
+        FROM inventory_items ii
+        LEFT JOIN inventory_categories ic ON ii.category_id = ic.id
+        WHERE ii.active = true
+        GROUP BY ic.name
+        ORDER BY total_value DESC
+        """;
+        
+    List<resto_dev.modules.analytics.domain.model.InventoryAnalytics.CategoryStock> categoryStats = jdbcTemplate.query(categorySql, (rs, rowNum) -> 
+        resto_dev.modules.analytics.domain.model.InventoryAnalytics.CategoryStock.builder()
+            .categoryName(rs.getString("category_name"))
+            .value(rs.getBigDecimal("total_value"))
+            .build()
+    );
+    
+    // Calculate category percentages
+    java.math.BigDecimal grandTotalValue = categoryStats.stream()
+        .map(resto_dev.modules.analytics.domain.model.InventoryAnalytics.CategoryStock::getValue)
+        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        
+    if (grandTotalValue.compareTo(java.math.BigDecimal.ZERO) > 0) {
+        categoryStats = categoryStats.stream()
+            .map(cs -> {
+                cs.setPercentage(cs.getValue()
+                    .multiply(new java.math.BigDecimal(100))
+                    .divide(grandTotalValue, 2, java.math.RoundingMode.HALF_UP)
+                    .doubleValue());
+                return cs;
+            }).toList();
+    }
+    
+    // 3. Critical Items
+    String criticalSql = """
+        SELECT 
+            name, 
+            current_stock, 
+            min_stock, 
+            unit
+        FROM inventory_items
+        WHERE active = true AND current_stock <= min_stock
+        ORDER BY (current_stock - min_stock) ASC
+        LIMIT 5
+        """;
+        
+    List<resto_dev.modules.analytics.domain.model.InventoryAnalytics.CriticalStockItem> criticalItems = jdbcTemplate.query(criticalSql, (rs, rowNum) -> 
+        resto_dev.modules.analytics.domain.model.InventoryAnalytics.CriticalStockItem.builder()
+            .name(rs.getString("name"))
+            .currentStock(rs.getBigDecimal("current_stock"))
+            .minStock(rs.getBigDecimal("min_stock"))
+            .unit(rs.getString("unit"))
+            .build()
+    );
+    
+    if (summary != null) {
+        summary.setCategoryDistribution(categoryStats);
+        summary.setCriticalItems(criticalItems);
+        return summary;
+    }
+    
+    return null;
+  }
 }
