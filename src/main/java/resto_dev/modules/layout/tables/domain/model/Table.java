@@ -1,7 +1,9 @@
 package resto_dev.modules.layout.tables.domain.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -10,13 +12,15 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Table {
     private UUID id;
     private UUID zoneId;
     private String tableNumber;
-    private int capacity;
+    private Integer capacity;
     private TableStatus status;
-    private boolean active;
+    private Boolean active;
     private Double posX;
     private Double posY;
     private Double width;
@@ -25,4 +29,8 @@ public class Table {
     private String shape;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public Boolean isActive() {
+        return active;
+    }
 }

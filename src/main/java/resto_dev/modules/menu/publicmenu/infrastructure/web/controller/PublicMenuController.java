@@ -14,7 +14,10 @@ import resto_dev.modules.layout.zones.application.port.output.ZoneRepositoryPort
 import resto_dev.modules.layout.zones.domain.model.Zone;
 import resto_dev.modules.menu.publicmenu.application.service.PublicMenuApplicationService;
 import resto_dev.modules.menu.publicmenu.domain.model.PublicMenuCategory;
+import resto_dev.modules.adminsaas.organizations.application.port.output.OrganizationRepositoryPort;
+import resto_dev.modules.adminsaas.organizations.domain.model.Organization;
 import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicCategoryDTO;
+import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicOrganizationDTO;
 import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicProductDTO;
 import resto_dev.modules.menu.publicmenu.infrastructure.web.dto.PublicTableDTO;
 import resto_dev.shared.errors.ApiException;
@@ -32,6 +35,26 @@ public class PublicMenuController {
     private final PublicMenuApplicationService publicMenuService;
     private final TableRepositoryPort tableRepository;
     private final ZoneRepositoryPort zoneRepository;
+    private final OrganizationRepositoryPort organizationRepository;
+
+    @Operation(summary = "Obtener Branding de la Organización", description = "Devuelve logo y colores corporativos")
+    @GetMapping("/branding")
+    public ResponseEntity<ApiResponse<PublicOrganizationDTO>> getBranding(
+            @PathVariable UUID organizationId) {
+
+        Organization org = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> ApiException.notFound("Organización no encontrada."));
+
+        PublicOrganizationDTO dto = PublicOrganizationDTO.builder()
+                .id(org.getId())
+                .name(org.getName())
+                .logoUrl(org.getLogoUrl())
+                .primaryColor(org.getPrimaryColor())
+                .secondaryColor(org.getSecondaryColor())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.ok(dto));
+    }
 
     @Operation(summary = "Obtener Carta Digital", description = "Devuelve todo el menú ordenado por categorías con todos los productos disponibles")
     @GetMapping("/menu")
