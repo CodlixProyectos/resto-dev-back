@@ -22,7 +22,9 @@ public class InventoryExcelParser {
             String description,
             String unit,
             BigDecimal initialStock,
-            BigDecimal costPrice
+            BigDecimal costPrice,
+            BigDecimal minStock,
+            BigDecimal maxStock
     ) {}
 
     public List<InventoryExcelRow> parse(MultipartFile file) throws Exception {
@@ -56,8 +58,10 @@ public class InventoryExcelParser {
 
                     BigDecimal stock = getCellValueAsBigDecimal(row.getCell(4));
                     BigDecimal price = getCellValueAsBigDecimal(row.getCell(5));
+                    BigDecimal minStock = getCellValueAsBigDecimal(row.getCell(6));
+                    BigDecimal maxStock = getCellValueAsBigDecimal(row.getCell(7));
 
-                    rows.add(new InventoryExcelRow(name, categoryName, description, unit, stock, price));
+                    rows.add(new InventoryExcelRow(name, categoryName, description, unit, stock, price, minStock, maxStock));
                 } catch (Exception e) {
                     log.warn("Error parseando fila {}: {}", row.getRowNum(), e.getMessage());
                 }

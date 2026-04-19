@@ -53,4 +53,10 @@ public class TableJpaEntity extends BaseEntity {
 
     @Column(name = "shape", length = 20)
     private String shape;
+
+    @Column(name = "customer_name")
+    private String customerName;
+
+    @Column(name = "current_order_id")
+    private String currentOrderId;
 }

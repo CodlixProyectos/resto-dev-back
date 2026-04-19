@@ -23,6 +23,8 @@ public class TableWebMapper {
                 .height(request.height())
                 .rotation(request.rotation())
                 .shape(request.shape())
+                .customerName(request.customerName())
+                .currentOrderId(request.currentOrderId())
                 .build();
     }
 
@@ -39,6 +41,8 @@ public class TableWebMapper {
                 .height(request.height())
                 .rotation(request.rotation())
                 .shape(request.shape())
+                .customerName(request.customerName())
+                .currentOrderId(request.currentOrderId())
                 .build();
     }
 
@@ -59,6 +63,8 @@ public class TableWebMapper {
                 table.getWidth(),
                 table.getHeight(),
                 table.getRotation(),
-                table.getShape());
+                table.getShape(),
+                table.getCustomerName(),
+                table.getCurrentOrderId());
     }
 }

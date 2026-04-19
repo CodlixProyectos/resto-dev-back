@@ -41,5 +41,11 @@ public record TableResponse(
         Integer rotation,
 
         @Schema(description = "Forma de la mesa", example = "SQUARE")
-        String shape) {
+        String shape,
+
+        @Schema(description = "Nombre del cliente ocupando la mesa", example = "Juan Pérez")
+        String customerName,
+
+        @Schema(description = "ID del pedido actual", example = "ORD-12345")
+        String currentOrderId) {
 }

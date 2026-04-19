@@ -28,6 +28,8 @@ public class TableEventMapper {
                 table.getWidth(),
                 table.getHeight(),
                 table.getRotation(),
-                table.getShape());
+                table.getShape(),
+                table.getCustomerName(),
+                table.getCurrentOrderId());
     }
 }

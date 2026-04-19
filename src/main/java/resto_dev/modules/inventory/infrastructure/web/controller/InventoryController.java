@@ -96,11 +96,11 @@ public class InventoryController {
 
     @PostMapping("/bulk-upload")
     @Operation(summary = "Cargar insumos masivamente desde un archivo Excel")
-    public ResponseEntity<ApiResponse<String>> bulkUpload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ApiResponse<InventoryService.ImportReport>> bulkUpload(@RequestParam("file") MultipartFile file) {
         try {
             var rows = excelParser.parse(file);
-            int processed = inventoryService.bulkUploadItems(rows);
-            return ResponseEntity.ok(ApiResponse.ok("Se han procesado " + processed + " productos correctamente."));
+            InventoryService.ImportReport report = inventoryService.bulkUploadItems(rows);
+            return ResponseEntity.ok(ApiResponse.ok(report));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Error al procesar el archivo Excel: " + e.getMessage()));
         }
@@ -108,10 +108,10 @@ public class InventoryController {
 
     @PostMapping("/bulk-save")
     @Operation(summary = "Guardar insumos masivamente desde datos JSON (Previsualización editable)")
-    public ResponseEntity<ApiResponse<String>> bulkSave(@RequestBody List<resto_dev.modules.inventory.infrastructure.excel.InventoryExcelParser.InventoryExcelRow> rows) {
+    public ResponseEntity<ApiResponse<InventoryService.ImportReport>> bulkSave(@RequestBody List<resto_dev.modules.inventory.infrastructure.excel.InventoryExcelParser.InventoryExcelRow> rows) {
         try {
-            int processed = inventoryService.bulkUploadItems(rows);
-            return ResponseEntity.ok(ApiResponse.ok("Se han guardado " + processed + " productos correctamente."));
+            InventoryService.ImportReport report = inventoryService.bulkUploadItems(rows);
+            return ResponseEntity.ok(ApiResponse.ok(report));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Error al guardar los productos: " + e.getMessage()));
         }
@@ -140,6 +140,13 @@ public class InventoryController {
                 request.supplierId()
         );
         return ResponseEntity.ok(ApiResponse.ok("Movimiento registrado correctamente"));
+    }
+
+    @DeleteMapping("/items/{id}")
+    @Operation(summary = "Eliminar (desactivar) un insumo")
+    public ResponseEntity<ApiResponse<Void>> deleteItem(@PathVariable UUID id) {
+        inventoryService.deleteItem(id);
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
     public record MovementRequest(

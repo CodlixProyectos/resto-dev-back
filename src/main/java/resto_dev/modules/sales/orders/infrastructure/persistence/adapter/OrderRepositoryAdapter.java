@@ -43,10 +43,16 @@ public class OrderRepositoryAdapter implements OrderRepositoryPort {
         Specification<OrderJpaEntity> spec = buildSpecification(query);
 
         // Sort: ASC for KDS (oldest first), DESC for history (newest first)
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        Sort sort;
         if (query.statuses() != null
                 && query.statuses().contains(resto_dev.modules.sales.orders.domain.model.OrderStatus.PENDING_KITCHEN)) {
             sort = Sort.by(Sort.Direction.ASC, "createdAt");
+        } else {
+            // Historial General: Queremos los que faltan cobrar (No PAID, No CANCELLED) primero, 
+            // y luego agrupados por fecha descendente.
+            sort = org.springframework.data.jpa.domain.JpaSort.unsafe(Sort.Direction.ASC, 
+                "(CASE WHEN status = 'PAID' THEN 1 WHEN status = 'CANCELLED' THEN 1 ELSE 0 END)")
+                .and(Sort.by(Sort.Direction.DESC, "createdAt"));
         }
 
         Pageable pageable = PageRequest.of(query.page(), query.size(), sort);

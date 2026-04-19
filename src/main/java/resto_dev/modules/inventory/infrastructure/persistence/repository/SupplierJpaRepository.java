@@ -14,4 +14,5 @@ public interface SupplierJpaRepository extends JpaRepository<SupplierJpaEntity, 
     List<SupplierJpaEntity> findAllByActiveTrue();
     Page<SupplierJpaEntity> findAllByActiveTrue(Pageable pageable);
     Page<SupplierJpaEntity> findAllByActiveTrueAndNameContainingIgnoreCase(String name, Pageable pageable);
+    boolean existsByNameIgnoreCaseAndActiveTrue(String name);
 }

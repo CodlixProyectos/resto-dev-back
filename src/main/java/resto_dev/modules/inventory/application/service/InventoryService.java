@@ -97,11 +97,29 @@ public class InventoryService {
     }
 
     @Transactional
-    public int bulkUploadItems(List<InventoryExcelParser.InventoryExcelRow> rows) {
-        int count = 0;
+    public record ImportReport(
+            int totalProcessed,
+            int duplicatesCount,
+            List<String> duplicateNames
+    ) {}
+
+    @Transactional
+    public ImportReport bulkUploadItems(List<InventoryExcelParser.InventoryExcelRow> rows) {
+        int processed = 0;
+        int duplicates = 0;
+        java.util.List<String> duplicateNames = new java.util.ArrayList<>();
+
         for (InventoryExcelParser.InventoryExcelRow row : rows) {
             try {
-                // 1. Get or create category
+                // 1. Check for duplicates
+                String trimmedName = row.name().trim();
+                if (itemRepository.existsByNameIgnoreCaseAndActiveTrue(trimmedName)) {
+                    duplicates++;
+                    duplicateNames.add(trimmedName);
+                    continue;
+                }
+
+                // 2. Get or create category
                 InventoryCategoryJpaEntity category = null;
                 if (row.categoryName() != null && !row.categoryName().isBlank()) {
                     category = categoryRepository.findByNameIgnoreCase(row.categoryName().trim())
@@ -114,27 +132,27 @@ public class InventoryService {
                             });
                 }
 
-                // 2. Build and save item
+                // 3. Build and save item
                 InventoryItemJpaEntity item = InventoryItemJpaEntity.builder()
-                        .name(row.name().trim())
+                        .name(trimmedName)
                         .description(row.description())
                         .category(category)
                         .unit(row.unit() != null ? row.unit().toLowerCase() : "un")
-                        .currentStock(row.initialStock())
-                        .minStock(BigDecimal.ZERO)
-                        .maxStock(BigDecimal.ZERO)
-                        .costPrice(row.costPrice())
+                        .currentStock(row.initialStock() != null ? row.initialStock() : BigDecimal.ZERO)
+                        .minStock(row.minStock() != null ? row.minStock() : BigDecimal.ZERO)
+                        .maxStock(row.maxStock() != null ? row.maxStock() : BigDecimal.ZERO)
+                        .costPrice(row.costPrice() != null ? row.costPrice() : BigDecimal.ZERO)
                         .active(true)
                         .createdAt(LocalDateTime.now())
                         .build();
 
                 itemRepository.save(item);
-                count++;
+                processed++;
             } catch (Exception e) {
                 log.error("Failed to upload row: {}. Reason: {}", row.name(), e.getMessage());
             }
         }
-        return count;
+        return new ImportReport(processed, duplicates, duplicateNames);
     }
 
     @Transactional(readOnly = true)
@@ -162,6 +180,16 @@ public class InventoryService {
                             supplierName
                     );
                 });
+    }
+
+    @Transactional
+    public void deleteItem(UUID id) {
+        InventoryItemJpaEntity item = itemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Item de inventario no encontrado: " + id));
+        item.setActive(false);
+        item.setUpdatedAt(LocalDateTime.now());
+        itemRepository.save(item);
+        log.info("Inventory item deactivated: {}", item.getName());
     }
 
     public record MovementDetailedDto(

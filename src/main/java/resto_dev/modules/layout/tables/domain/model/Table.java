@@ -27,6 +27,8 @@ public class Table {
     private Double height;
     private Integer rotation;
     private String shape;
+    private String customerName;
+    private String currentOrderId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

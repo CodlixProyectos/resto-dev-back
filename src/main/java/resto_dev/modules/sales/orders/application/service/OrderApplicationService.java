@@ -122,6 +122,10 @@ public class OrderApplicationService implements
         if (savedOrder.getType() == OrderType.DINE_IN && savedOrder.getTableId() != null) {
             tableRepository.findById(savedOrder.getTableId()).ifPresent(table -> {
                 table.setStatus(TableStatus.OCCUPIED);
+                if (savedOrder.getCustomerName() != null && !savedOrder.getCustomerName().trim().isEmpty()) {
+                    table.setCustomerName(savedOrder.getCustomerName());
+                }
+                table.setCurrentOrderId(savedOrder.getId().toString());
                 tableRepository.save(table);
                 tableEventPublisher.publishTableEvent(TenantContext.getCurrentOrganizationId(), table, "TABLE_UPDATED");
             });
@@ -246,6 +250,8 @@ public class OrderApplicationService implements
             if (!hasOtherActiveOrders) {
                 tableRepository.findById(savedOrder.getTableId()).ifPresent(table -> {
                     table.setStatus(TableStatus.FREE);
+                    table.setCustomerName(null);
+                    table.setCurrentOrderId(null);
                     tableRepository.save(table);
                     tableEventPublisher.publishTableEvent(TenantContext.getCurrentOrganizationId(), table, "TABLE_UPDATED");
                 });

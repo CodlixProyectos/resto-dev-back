@@ -60,4 +60,46 @@ public class SupplierService {
         supplierRepository.save(supplier);
         log.info("Supplier soft-deleted: {}", id);
     }
+
+    public record ImportReport(
+            int totalProcessed,
+            int duplicatesCount,
+            List<String> duplicateNames
+    ) {}
+
+    @Transactional
+    public ImportReport bulkUploadSuppliers(List<resto_dev.modules.inventory.infrastructure.excel.SupplierExcelParser.SupplierExcelRow> rows) {
+        int processed = 0;
+        int duplicates = 0;
+        List<String> duplicateNames = new java.util.ArrayList<>();
+
+        for (var row : rows) {
+            try {
+                String trimmedName = row.name().trim();
+                
+                // Check duplicate
+                if (supplierRepository.existsByNameIgnoreCaseAndActiveTrue(trimmedName)) {
+                    duplicates++;
+                    duplicateNames.add(trimmedName);
+                    continue;
+                }
+
+                SupplierJpaEntity supplier = SupplierJpaEntity.builder()
+                        .name(trimmedName)
+                        .contactName(row.contactName())
+                        .phone(row.phone())
+                        .email(row.email())
+                        .address(row.address())
+                        .active(true)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+
+                supplierRepository.save(supplier);
+                processed++;
+            } catch (Exception e) {
+                log.error("Failed to upload supplier row: {}. Reason: {}", row.name(), e.getMessage());
+            }
+        }
+        return new ImportReport(processed, duplicates, duplicateNames);
+    }
 }

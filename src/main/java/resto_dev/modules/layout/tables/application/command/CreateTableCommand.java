@@ -16,5 +16,7 @@ public record CreateTableCommand(
         Double width,
         Double height,
         Integer rotation,
-        String shape) {
+        String shape,
+        String customerName,
+        String currentOrderId) {
 }

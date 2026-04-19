@@ -22,4 +22,6 @@ public interface InventoryItemJpaRepository extends JpaRepository<InventoryItemJ
     Page<InventoryItemJpaEntity> findAllByActiveTrue(Pageable pageable);
     Page<InventoryItemJpaEntity> findAllByActiveTrueAndNameContainingIgnoreCase(String name, Pageable pageable);
     List<InventoryItemJpaEntity> findAllByCategory(String category);
+    boolean existsByNameIgnoreCaseAndActiveTrue(String name);
+    java.util.Optional<InventoryItemJpaEntity> findByNameIgnoreCaseAndActiveTrue(String name);
 }

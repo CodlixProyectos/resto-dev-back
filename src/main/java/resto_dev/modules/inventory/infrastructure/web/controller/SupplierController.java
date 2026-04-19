@@ -25,6 +25,7 @@ import java.util.UUID;
 public class SupplierController {
 
     private final SupplierService supplierService;
+    private final resto_dev.modules.inventory.infrastructure.excel.SupplierExcelParser excelParser;
 
     @GetMapping
     @Operation(summary = "Obtener proveedores activos con paginación y búsqueda")
@@ -55,5 +56,28 @@ public class SupplierController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         supplierService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    @PostMapping("/bulk-upload")
+    @Operation(summary = "Cargar proveedores masivamente desde un archivo Excel")
+    public ResponseEntity<ApiResponse<SupplierService.ImportReport>> bulkUpload(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        try {
+            var rows = excelParser.parse(file);
+            SupplierService.ImportReport report = supplierService.bulkUploadSuppliers(rows);
+            return ResponseEntity.ok(ApiResponse.ok(report));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Error al procesar el archivo Excel: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/bulk-save")
+    @Operation(summary = "Guardar proveedores masivamente desde datos JSON")
+    public ResponseEntity<ApiResponse<SupplierService.ImportReport>> bulkSave(@RequestBody List<resto_dev.modules.inventory.infrastructure.excel.SupplierExcelParser.SupplierExcelRow> rows) {
+        try {
+            SupplierService.ImportReport report = supplierService.bulkUploadSuppliers(rows);
+            return ResponseEntity.ok(ApiResponse.ok(report));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Error al guardar los proveedores: " + e.getMessage()));
+        }
     }
 }

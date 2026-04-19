@@ -26,6 +26,8 @@ public class TableJpaMapper {
                 .height(entity.getHeight())
                 .rotation(entity.getRotation())
                 .shape(entity.getShape())
+                .customerName(entity.getCustomerName())
+                .currentOrderId(entity.getCurrentOrderId())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -54,6 +56,8 @@ public class TableJpaMapper {
                 .height(table.getHeight())
                 .rotation(table.getRotation())
                 .shape(table.getShape())
+                .customerName(table.getCustomerName())
+                .currentOrderId(table.getCurrentOrderId())
                 .build();
 
         if (table.getId() != null) {
